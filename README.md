@@ -1,5 +1,5 @@
 # learning_data_science
-A few projects completed while learning Data Science, mostly for educational purposes.
+A few projects completed while learning Data Science, mostly for educational purposes. Each project is available as a Jupyter (.ipynb file) and as an html file. 
 
 In the notebook Profitable_App_Profiles.ipynb I study the popularity of apps on the Apple App and Google Play stores as function of their genre, size, and content rating. 
 
