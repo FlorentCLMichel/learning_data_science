@@ -13119,7 +13119,7 @@ div#notebook {
 <h1 id="Job-prospects-after-graduation">Job prospects after graduation<a class="anchor-link" href="#Job-prospects-after-graduation">&#182;</a></h1><p>The aim of this project is to visually explore the varations in salary for university graduates from different majors.</p>
 <h2 id="The-dataset">The dataset<a class="anchor-link" href="#The-dataset">&#182;</a></h2><p>The dataset, <code>recent-grads.csv</code>, was downloaded from <a href="https://github.com/fivethirtyeight/data/tree/master/college-majors">FiveThirtyEight's GitHub repository</a> on 20/10/2019. 
 The data is originally from American Community Survey 2010-2012 Public Use Microdata Series, available <a href="http://www.census.gov/programs-surveys/acs/data/pums.html">here</a>, with documentation <a href="http://www.census.gov/programs-surveys/acs/technical-documentation/pums.html">here</a>. 
-It contains a breakdown of basic earnings and laboor force information for studens who graduated from US colleges between 2010 and 2012.</p>
+It contains a breakdown of basic earnings and labor force information for studens who graduated from US colleges between 2010 and 2012.</p>
 <p>Each row represents a different major. 
 The columns are:</p>
 <ul>
@@ -13177,7 +13177,7 @@ The columns are:</p>
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">recent_grads</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;recent-grads.csv&#39;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">recent_grads</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../Data/recent-grads.csv&#39;</span><span class="p">)</span>
 <span class="n">recent_grads</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
@@ -14972,6 +14972,151 @@ z-score for the difference: 0.45
 <p>The difference between the two mean values has a z-score smaller than 0.5. 
 It thus does not seem statistically significant. 
 We conclude that, <strong>although the last 10 majors lead to significantly lower median earnings than the first 10 ones, their students do not have significantly higher chances of being unemployed</strong>.</p>
+<h3 id="Statistical-significance-of-the-correlations">Statistical significance of the correlations<a class="anchor-link" href="#Statistical-significance-of-the-correlations">&#182;</a></h3><p>We now want to estimate whether the correlation coefficients computed above are statistically significant. 
+To this end, we compute their uncertainty using a bootstrap method mplemented in the library <code>correlation.so</code>. 
+(The code below should work on Linux. 
+On oter operating systems, the file <code>correlation.c</code> should be compiled as a shared library and the extension <code>.so</code> in the cell below replaced by the relevent one.) 
+Notice that the bootstrap method involves a (pseudo-)random reshufling of the rows (with replacements). 
+The code below is thus (pseudo-)random.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">ctypes</span> <span class="k">as</span> <span class="nn">ct</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># C library with the bootstrap method</span>
+<span class="n">libc</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">CDLL</span><span class="p">(</span><span class="s1">&#39;../C/correlation.so&#39;</span><span class="p">)</span>
+
+<span class="c1"># types of the arguments and return value for the function to calculate the </span>
+<span class="c1"># correlation coefficient</span>
+<span class="n">libc</span><span class="o">.</span><span class="n">corr</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;double&#39;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;double&#39;</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_int</span><span class="p">]</span>
+<span class="n">libc</span><span class="o">.</span><span class="n">corr</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span>
+
+<span class="c1"># types of the arguments and return value for the function to calculate the </span>
+<span class="c1"># standard deviation of the correlation coefficient</span>
+<span class="n">libc</span><span class="o">.</span><span class="n">std_corr</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;double&#39;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ctypeslib</span><span class="o">.</span><span class="n">ndpointer</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;double&#39;</span><span class="p">),</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_int</span><span class="p">,</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_int</span><span class="p">]</span>
+<span class="n">libc</span><span class="o">.</span><span class="n">std_corr</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ct</span><span class="o">.</span><span class="n">c_double</span>
+
+<span class="c1"># Python wrapper: correlation coefficient</span>
+<span class="k">def</span> <span class="nf">corr_coeff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    computes the correlation coefficient between x and y</span>
+<span class="sd">    </span>
+<span class="sd">    return type: float</span>
+<span class="sd">    </span>
+<span class="sd">    x: numpy array of float64</span>
+<span class="sd">    y: numpy array of float64</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">libc</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+
+<span class="c1"># Python wrapper: standard deviation of the correlation coefficient</span>
+<span class="k">def</span> <span class="nf">std_corr_coeff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    computes the standard deviation for the correlation coefficient between </span>
+<span class="sd">    x and y</span>
+<span class="sd">    </span>
+<span class="sd">    return type: float</span>
+<span class="sd">    </span>
+<span class="sd">    x: numpy array of float64</span>
+<span class="sd">    y: numpy array of float64</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">libc</span><span class="o">.</span><span class="n">std_corr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">corr_and_error</span><span class="p">(</span><span class="n">dframe</span><span class="p">,</span> <span class="n">column1</span><span class="p">,</span> <span class="n">column2</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    computes the correlation coefficient between the values in columns column1 </span>
+<span class="sd">    and column2 of the dataframe dframe and its standard deviation</span>
+<span class="sd">    The two columns are assumed to contain numeric values only.</span>
+<span class="sd">    </span>
+<span class="sd">    dframe: pandas dataframe</span>
+<span class="sd">    column1: string</span>
+<span class="sd">    column2: string</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dframe</span><span class="p">[</span><span class="n">column1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dframe</span><span class="p">[</span><span class="n">column2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">corr_coeff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span> <span class="n">std_corr_coeff</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># function to print the result in a self-explanatory way</span>
+<span class="k">def</span> <span class="nf">print_corr_and_error</span><span class="p">(</span><span class="n">dframe</span><span class="p">,</span> <span class="n">column1</span><span class="p">,</span> <span class="n">column2</span><span class="p">):</span>
+    <span class="n">phrase</span> <span class="o">=</span> <span class="s1">&#39;The correlation coefficient between columns </span><span class="si">{}</span><span class="s1"> and </span><span class="si">{}</span><span class="s1"> is </span><span class="si">{:.2g}</span><span class="s1"> ± </span><span class="si">{:.2g}</span><span class="s1">.&#39;</span>
+    <span class="n">corr</span><span class="p">,</span> <span class="n">std_corr</span> <span class="o">=</span> <span class="n">corr_and_error</span><span class="p">(</span><span class="n">dframe</span><span class="p">,</span> <span class="n">column1</span><span class="p">,</span> <span class="n">column2</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">phrase</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">column1</span><span class="p">,</span> <span class="n">column2</span><span class="p">,</span> <span class="n">corr</span><span class="p">,</span> <span class="n">std_corr</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We now use the function <code>print_corr_and_error</code> to determine which correlations are statistically significant. 
+We will consider that <em>a correlation is significant if the correlation coefficient is larger than three times its standard deviation in absolute value</em>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">print_corr_and_error</span><span class="p">(</span><span class="n">recent_grads</span><span class="p">,</span> <span class="s1">&#39;Sample_size&#39;</span><span class="p">,</span> <span class="s1">&#39;Median&#39;</span><span class="p">)</span>
+<span class="n">print_corr_and_error</span><span class="p">(</span><span class="n">recent_grads</span><span class="p">,</span> <span class="s1">&#39;Sample_size&#39;</span><span class="p">,</span><span class="s1">&#39;Unemployment_rate&#39;</span><span class="p">)</span>
+<span class="n">print_corr_and_error</span><span class="p">(</span><span class="n">recent_grads</span><span class="p">,</span> <span class="s1">&#39;Median&#39;</span><span class="p">,</span><span class="s1">&#39;Unemployment_rate&#39;</span><span class="p">)</span>
+<span class="n">print_corr_and_error</span><span class="p">(</span><span class="n">recent_grads</span><span class="p">,</span> <span class="s1">&#39;Men&#39;</span><span class="p">,</span> <span class="s1">&#39;Women&#39;</span><span class="p">)</span>
+<span class="n">print_corr_and_error</span><span class="p">(</span><span class="n">recent_grads</span><span class="p">,</span><span class="s1">&#39;Median&#39;</span><span class="p">,</span> <span class="s1">&#39;ShareWomen&#39;</span><span class="p">)</span>
+<span class="n">print_corr_and_error</span><span class="p">(</span><span class="n">recent_grads</span><span class="p">,</span><span class="s1">&#39;Median&#39;</span><span class="p">,</span> <span class="s1">&#39;Full_time&#39;</span><span class="p">)</span>
+<span class="n">print_corr_and_error</span><span class="p">(</span><span class="n">recent_grads</span><span class="p">,</span><span class="s1">&#39;Median&#39;</span><span class="p">,</span> <span class="s1">&#39;Total&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>The correlation coefficient between columns Sample_size and Median is -0.064 ± 0.048.
+The correlation coefficient between columns Sample_size and Unemployment_rate is 0.063 ± 0.05.
+The correlation coefficient between columns Median and Unemployment_rate is -0.12 ± 0.095.
+The correlation coefficient between columns Men and Women is 0.67 ± 0.064.
+The correlation coefficient between columns Median and ShareWomen is -0.62 ± 0.039.
+The correlation coefficient between columns Median and Full_time is -0.079 ± 0.049.
+The correlation coefficient between columns Median and Total is -0.11 ± 0.047.
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We ran the above cell several times to make sure the variations in the values of the standard deviations do not change the results.
+According to the above definition, there is</p>
+<ul>
+<li><strong>a significant positive correlation between the numbers of men and women in each major</strong>,</li>
+<li><strong>a significant negative correlation between the share of women and the median earnings</strong>.</li>
+</ul>
 
 </div>
 </div>

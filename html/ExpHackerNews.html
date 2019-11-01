@@ -13117,7 +13117,7 @@ div#notebook {
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="Popularity-of-Hacker-News-&#8220;Ask-HN&#8221;-and-&#8220;Show-HN&#8221;-posts">Popularity of Hacker News &#8220;Ask HN&#8221; and &#8220;Show HN&#8221; posts<a class="anchor-link" href="#Popularity-of-Hacker-News-&#8220;Ask-HN&#8221;-and-&#8220;Show-HN&#8221;-posts">&#182;</a></h1><p><a href="https://news.ycombinator.com/">Hacker News</a> is a popular link sharing platform focusing on information technology, hacking, and start-ups. 
-Users can upvote or comment on posts published by each others, and the most popular ones are sent to all members in a daily nesletter, strongly increasing its visibility.
+Users can upvote or comment on posts published by each others, and the most popular ones are sent to all members in a daily newsletter, strongly increasing its visibility.
 In this project, we want to determine what is the optimal posting time to maximise the popularity of a post.</p>
 <p>Our main results are:</p>
 <ul>
@@ -13151,7 +13151,7 @@ In this project, we want to determine what is the optimal posting time to maximi
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">csv</span> <span class="k">import</span> <span class="n">reader</span>
 
-<span class="n">hn</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;HN_posts_year_to_Sep_26_2016.csv&#39;</span><span class="p">)))</span>
+<span class="n">hn</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">reader</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;../Data/HN_posts_year_to_Sep_26_2016.csv&#39;</span><span class="p">)))</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">hn</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">num_rows</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">columns</span> <span class="o">=</span> <span class="n">hn</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">index</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num_rows</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
 </pre></div>
 
