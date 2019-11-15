@@ -14,3 +14,4 @@ In eBay Kleinanzeigen.ipynb I study some properties of ads for cars sold on the 
 
 In Earnings_college_major.ipynb, I study the median earnings and employment rates of college graduates in the USA (work in progress).
 
+In Employees_Exit_Survey.ipynb, I study the reason for resignation of employees from two departments of the Queensland government.
