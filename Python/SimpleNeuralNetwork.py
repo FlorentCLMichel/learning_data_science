@@ -4,9 +4,9 @@ We use a sigmoid as activation function and lean square as loss function.
 
 This impleentation is not efficient for a large number of neurons and should 
 thus not be used for real-world applications. Much more efficient 
-implementations are provided, for instance, by the Tensorflow and Keras 
-libraries. The main goal of the present file is to show the inner workings of a
-basic neural network in a more transparent way.
+implementations are provided, for instance, by the Tensorflow, PyTorch, and 
+Keras libraries. The main goal of the present file is to show the inner 
+workings of a basic neural network in a more transparent way.
 '''
 
 import numpy as np
