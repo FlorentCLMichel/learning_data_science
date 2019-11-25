@@ -131,3 +131,24 @@ class NeuralNetwork:
 def load_NN_1(name_file):
 	list_parameters = np.load(name_file+'.npy', allow_pickle=True)
 	return NeuralNetwork_1(*list_parameters)
+
+
+# Example use (data taken from https://victorzhou.com/blog/intro-to-neural-networks/): 
+
+layers = [2, 1]
+data = np.array([
+  [-2, -1],  
+  [25, 6],   
+  [17, 4],   
+  [-15, -6], 
+])
+y_true_all = np.array([
+  1, 
+  0, 
+  0, 
+  1, 
+])
+
+myNetwork = NeuralNetwork(layers)
+myNetwork.train(data, y_true_all)
+print(myNetwork.loss(data, y_true_all))
