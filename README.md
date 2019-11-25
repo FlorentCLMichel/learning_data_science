@@ -1,6 +1,6 @@
 # learning_data_science
 
-A few projects completed while learning Data Science, mostly for educational purposes. Each project is available as a Jupyter (.ipynb file) and as an html file. 
+A few projects completed while learning Data Science, mostly for educational purposes. Each Data Analysis project is available as a Jupyter (.ipynb file, in the Projects_Jupyter folder) and as an html file (in the html filder). 
 
 The folder Data contains the data files, and C contains C libraries.
 
@@ -15,3 +15,5 @@ In eBay Kleinanzeigen.ipynb I study some properties of ads for cars sold on the 
 In Earnings_college_major.ipynb, I study the median earnings and employment rates of college graduates in the USA (work in progress).
 
 In Employees_Exit_Survey.ipynb, I study the reason for resignation of employees from two departments of the Queensland government.
+
+The folder Python contains Python codes not directly related to a particular Data Analysis project.
