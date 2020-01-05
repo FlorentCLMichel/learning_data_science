@@ -13,6 +13,8 @@ winequality-red.csv: https://elitedatascience.com/python-machine-learning-tutori
 Data Analyst Task.xlsx: envoyé par Ahmed Aqueel de la part de WhoCanFixMyCar
 gb.csv: https://simplemaps.com/data/gb-cities (03/12/2019)
 StarWars.csv: https://github.com/fivethirtyeight/data/tree/cc60359f154fc522333ccc81055e8512a1057414/star-wars-survey (13/12/2019)
+factbook.db: https://github.com/factbook/factbook.sql/releases (05/01/2020)
+
 
 data in NYC_schools (all downloaded on 05/12/2019): 
 	https://data.cityofnewyork.us/Education/2012-SAT-Results/f9bf-2cp4
@@ -24,3 +26,7 @@ data in NYC_schools (all downloaded on 05/12/2019):
 	https://data.cityofnewyork.us/Education/2011-NYC-School-Survey/mnz3-dyi8
 	https://data.cityofnewyork.us/Education/2012-SAT-Results/f9bf-2cp4
 	https://data.cityofnewyork.us/Education/2014-2015-DOE-High-School-Directory/n3p6-zve2
+
+data in MNIST: http://yann.lecun.com/exdb/mnist/ (23/12/2019)
+
+
