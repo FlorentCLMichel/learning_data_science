@@ -13116,15 +13116,21 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Analyzing-the-exit-surveys-of-the-DETE-and-TAFE--(work-in-progress)">Analyzing the exit surveys of the DETE and TAFE <br /> (work in progress)<a class="anchor-link" href="#Analyzing-the-exit-surveys-of-the-DETE-and-TAFE--(work-in-progress)">&#182;</a></h1><p>In this project, we analyse exit surveys from employees of the Department of Education, Training and Employment (DETE) and the Technical and Further Education (TAFE) institute in Queensland, Australia. 
+<h1 id="Analyzing-the-exit-surveys-of-the-DETE-and-TAFE">Analyzing the exit surveys of the DETE and TAFE<a class="anchor-link" href="#Analyzing-the-exit-surveys-of-the-DETE-and-TAFE">&#182;</a></h1><p>In this project, we analyse exit surveys from employees of the Department of Education, Training and Employment (DETE) and the Technical and Further Education (TAFE) institute in Queensland, Australia. 
 We aim at answering the following two questions:</p>
 <ul>
 <li>Do employees working for these institutes for short periods of time leave because they are dissatisfied with them?</li>
 <li>How does the result depend on the employees age?</li>
 </ul>
-<p>This project will mostly consist in cleaning two databases, corresponding to the DETE and TAFE, with the view of combining them in the analysis.</p>
+<p>This project will mostly consist in cleaning two databases, corresponding to the DETE and TAFE, with the view of combining them in the analysis. 
+We then briefly analyse the data. 
+Our main conclusions are:</p>
+<ul>
+<li>More employees from the DETE than from the TAFE resign because of dissatisfaction.</li>
+<li>The difference is stronger for employees with more than 3 years of experience.</li>
+</ul>
 <h2 id="The-databases">The databases<a class="anchor-link" href="#The-databases">&#182;</a></h2><p>As mentioned above, we work with two databases. 
-The first one, <code>dete-exit-survey-january-2014.csv</code>, downloaded from the <a href="https://data.gov.au/dataset/ds-qld-fe96ff30-d157-4a81-851d-215f2a0fe26d/details?q=exit%20survey">Australian government website</a>, contains staff feedback on why ther resign or retire from the DETE.
+The first one, <code>dete-exit-survey-january-2014.csv</code>, downloaded from the <a href="https://data.gov.au/dataset/ds-qld-fe96ff30-d157-4a81-851d-215f2a0fe26d/details?q=exit%20survey">Australian government website</a>, contains staff feedback on why they resign or retire from the DETE.
 It was created on 25 March 2014 and never updated since then. 
 The second one, <code>tafe-employee-exit-survey-access-database-december-2013.csv</code>, also downloaded from the <a href="https://data.gov.au/dataset/ds-qld-89970a3b-182b-41ea-aea2-6f9f17b5907e/details?q=exit%20survey">Australian government website</a>, contains similar information for the TAFE. 
 It was created on 19 March 2014 and last updated on 10 July 2019. 
@@ -13322,8 +13328,8 @@ None
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The first dataset has 822 row and 56 columns containing either “objects” (posibly strings) or bools, except the <code>ID</code> column which contains integers. 
-The second one has 702 row and 72 columns containing “objects”, except the <code>ID</code> column whc contains integers and the <code>CESSATION YEAR</code> column which contains floats.
+<p>The first dataset has 822 rows and 56 columns containing either “objects” (possibly strings) or bools, except the <code>ID</code> column which contains integers. 
+The second one has 702 row and 72 columns containing “objects”, except the <code>ID</code> column which contains integers and the <code>CESSATION YEAR</code> column which contains floats.
 In both cases, a significant number of columns have missing values.</p>
 <p>Let us now print the first few lines of each dataset.</p>
 
@@ -14245,11 +14251,12 @@ In both cases, a significant number of columns have missing values.</p>
 <ul>
 <li>Some columns in one dataframe have no equivalent in the other.</li>
 <li>The formats for the dates are different. </li>
-<li>There are many columns; grouing them in a few categories would give us a better overall idea of the situation.</li>
+<li>There are many columns; grouping them in a few categories would give us a better overall idea of the situation.</li>
 <li>The meaning of some entries in the first dataset, for example in the column <code>Kept informed</code>, is not clear.</li>
 <li>The second dataset has multiple occurrences of “-” denoting missing values; the first dataset has some occurrences of “Not Stated” denoting missing values.</li>
 </ul>
-<p>We will thus need to extract the relevent columns from each dataset, group them into a few meaningful categories, convert dates to a common format, understand the meaning of unclear entries, and .
+<p>We will thus need to extract the relevent columns from each dataset, group them into a few meaningful categories, convert dates to a common format, understand the meaning of unclear entries, and repace “-” and “Not Stated” by a common value indicating lack of data. 
+We choose to denote missing value by numpy's NaN.
 Let us first deal with the last point:</p>
 
 </div>
@@ -15236,7 +15243,7 @@ Let us first deal with the last point:</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>In the TAFE dataset, some lines have significantly more missing values than others. 
 This is also true, to a lesser extent, for the DETE dataset.</p>
-<h2 id="Data-Cleaning">Data Cleaning<a class="anchor-link" href="#Data-Cleaning">&#182;</a></h2><h3 id="Columns">Columns<a class="anchor-link" href="#Columns">&#182;</a></h3><p>Let us first delete the columns we do not need, <em>i.e.</em>, columns 28 to 48 in <code>dete_survey</code> and 17 to 65 in <code>tafe_survey</code>:</p>
+<h2 id="Data-Cleaning">Data Cleaning<a class="anchor-link" href="#Data-Cleaning">&#182;</a></h2><h3 id="Columns">Columns<a class="anchor-link" href="#Columns">&#182;</a></h3><p>Let us first delete the columns we do not need, <em>i.e.</em>, columns 28 to 48 in <code>dete_survey</code> and 27 to 65 in <code>tafe_survey</code>:</p>
 
 </div>
 </div>
@@ -15258,7 +15265,7 @@ This is also true, to a lesser extent, for the DETE dataset.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us now put the column names of <code>dete_survey</code> in snake case (lowercase, words separated by underscoores, no trailing or leading space):</p>
+<p>Let us now put the column names of <code>dete_survey</code> in snake case (lowercase, words separated by underscores, no trailing or leading space):</p>
 
 </div>
 </div>
@@ -16123,7 +16130,8 @@ We keep only the years, and discard the months.</p>
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Converting-ages-to-floats">Converting ages to floats<a class="anchor-link" href="#Converting-ages-to-floats">&#182;</a></h3><p>We now wish to turn the <code>age</code> column to floats. 
-As this column contains age intervals, we will retain only the lower bound of the interval. 
+This column contains age intervals. 
+To get a single number, we will retain only the lower bound of the interval. 
 Let us first see which values it contains.</p>
 
 </div>
@@ -16188,8 +16196,8 @@ Name: age, dtype: int64
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>When the value is set, the lower bound is always given by the first word if the string is split by the tw characters ' ' and '-'. 
-We thus define the function <code>age_range_to_lower_bound</code> taking a Pandas series of strings, splitting it by these two characters, and returnin the first word if it exists, or NaN otherwise.</p>
+<p>When the value is set, the lower bound is always given by the first word after splitting the string by the two characters ' ' and '-'. 
+We thus define the function <code>age_range_to_lower_bound</code> taking a Pandas series of strings, splitting it by these two characters, and returning the first word if it exists, or NaN otherwise.</p>
 
 </div>
 </div>
@@ -16201,7 +16209,8 @@ We thus define the function <code>age_range_to_lower_bound</code> taking a Panda
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">first_word_or_nothing</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Returns the first element of l. If l is not a list or empty, returns NaN.</span>
+<span class="sd">    Returns the first element of l. If l is not a list or is empty, returns </span>
+<span class="sd">    NaN.</span>
 <span class="sd">    l: list or NaN</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">list</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -16331,7 +16340,7 @@ To this end, we first show box plots of the columns <code>age</code> and <code>c
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">boxplot_dete_tafe</span><span class="p">(</span><span class="n">column</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    show a box plot of the columns labelles &#39;column&#39; in the dete_resignations and tafe_resignation dataframes</span>
+<span class="sd">    show a box plot of the columns labelled &#39;column&#39; in the dete_resignations and tafe_resignation dataframes</span>
 <span class="sd">    column: string</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">dete_col_reindexed</span> <span class="o">=</span> <span class="n">dete_resignations</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;dete&#39;</span><span class="p">)</span>
@@ -16401,6 +16410,7 @@ there are three outliers, but they do not seem obviously wrong.</p>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dete_resignations</span><span class="p">[[</span><span class="s1">&#39;dete_start_date&#39;</span><span class="p">,</span><span class="s1">&#39;role_start_date&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;dete&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -16410,19 +16420,6 @@ there are three outliers, but they do not seem obviously wrong.</p>
 <div class="output_wrapper">
 <div class="output">
 
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[17]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>&lt;matplotlib.axes._subplots.AxesSubplot at 0x7f2b22afa828&gt;</pre>
-</div>
-
-</div>
 
 <div class="output_area">
 
@@ -17146,7 +17143,7 @@ Name: role_service, dtype: int64
 <h2 id="Data-Analysis">Data Analysis<a class="anchor-link" href="#Data-Analysis">&#182;</a></h2><h3 id="Dissatisfied-employees">Dissatisfied employees<a class="anchor-link" href="#Dissatisfied-employees">&#182;</a></h3><p>We now select the lines corresponding to employees who resigned because they were dissatisfied. 
 In the <code>dete_resignation</code> dataset, we estimate that an employee was dissatisfied with their job if in one of the values for <code>job_dissatisfaction</code>, <code>dissatisfaction_with_the_department</code>, <code>physical_work_environment</code>, <code>lack_of_recognition</code>, <code>lack_of_job_security</code>, <code>work_location</code>, <code>employment_conditions</code>, <code>work_life_balance</code>, or <code>workload</code> is <code>True</code>. 
 In the <code>tafe_resignation</code> dataset, we estimate that an employee was dissatisfied with their job if one of the values for <code>Contributing Factors. Dissatisfaction</code> or <code>Contributing Factors. Job Dissatisfaction</code> is not empty. 
-To check this is sensible, let us see which values these coluns contain.</p>
+To check this is sensible, let us see which values these columns contain.</p>
 
 </div>
 </div>
@@ -17214,7 +17211,7 @@ To make the analysis easier, we replace these values by <code>True</code>:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We then add a column <code>dissatisfied</code> to each of these dataframes, with value <code>True</code> if the employee was dissatisfied and <code>False</code> otherwise.</p>
+<p>We then add a column <code>dissatisfied</code> to each dataframe, with value <code>True</code> if the employee was dissatisfied and <code>False</code> otherwise.</p>
 
 </div>
 </div>
@@ -17365,306 +17362,6 @@ We then combine the two dataframes in <code>combined_resignations</code> and, to
       <td>DETE</td>
     </tr>
     <tr>
-      <th>12</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Female</td>
-      <td>36.0</td>
-      <td>14.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>14</th>
-      <td>Resignation-Other employer</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>31.0</td>
-      <td>5.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>16</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Teacher Aide</td>
-      <td>Permanent Part-time</td>
-      <td>Male</td>
-      <td>61.0</td>
-      <td>NaN</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>Resignation-Other employer</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>56.0</td>
-      <td>30.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>21</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Cleaner</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>51.0</td>
-      <td>32.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>22</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>School Administrative Staff</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>46.0</td>
-      <td>15.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>23</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Female</td>
-      <td>61.0</td>
-      <td>39.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>25</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>41.0</td>
-      <td>17.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>27</th>
-      <td>Resignation-Other employer</td>
-      <td>2012.0</td>
-      <td>Public Servant</td>
-      <td>Permanent Full-time</td>
-      <td>Female</td>
-      <td>21.0</td>
-      <td>7.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>33</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>36.0</td>
-      <td>9.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>34</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Cleaner</td>
-      <td>Permanent Part-time</td>
-      <td>Male</td>
-      <td>61.0</td>
-      <td>6.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>37</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Teacher Aide</td>
-      <td>Temporary Part-time</td>
-      <td>Female</td>
-      <td>21.0</td>
-      <td>1.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>39</th>
-      <td>Resignation-Move overseas/interstate</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Female</td>
-      <td>21.0</td>
-      <td>NaN</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>40</th>
-      <td>Resignation-Other employer</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>56.0</td>
-      <td>35.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>41</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Head of Curriculum/Head of Special Education</td>
-      <td>Permanent Full-time</td>
-      <td>Female</td>
-      <td>51.0</td>
-      <td>38.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>42</th>
-      <td>Resignation-Move overseas/interstate</td>
-      <td>2012.0</td>
-      <td>Cleaner</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>41.0</td>
-      <td>1.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>43</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>51.0</td>
-      <td>36.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>48</th>
-      <td>Resignation-Move overseas/interstate</td>
-      <td>2012.0</td>
-      <td>Cleaner</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>21.0</td>
-      <td>3.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>50</th>
-      <td>Resignation-Move overseas/interstate</td>
-      <td>2012.0</td>
-      <td>Cleaner</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>21.0</td>
-      <td>3.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>51</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Cleaner</td>
-      <td>Permanent Full-time</td>
-      <td>Female</td>
-      <td>61.0</td>
-      <td>19.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>55</th>
-      <td>Resignation-Other employer</td>
-      <td>2012.0</td>
-      <td>Teacher Aide</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>26.0</td>
-      <td>4.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>57</th>
-      <td>Resignation-Other employer</td>
-      <td>2012.0</td>
-      <td>Teacher</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>46.0</td>
-      <td>9.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>61</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Schools Officer</td>
-      <td>Temporary Part-time</td>
-      <td>Female</td>
-      <td>31.0</td>
-      <td>1.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>69</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Public Servant</td>
-      <td>Permanent Full-time</td>
-      <td>Female</td>
-      <td>36.0</td>
-      <td>6.0</td>
-      <td>True</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
-      <th>71</th>
-      <td>Resignation-Other reasons</td>
-      <td>2012.0</td>
-      <td>Teacher Aide</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>36.0</td>
-      <td>1.0</td>
-      <td>False</td>
-      <td>DETE</td>
-    </tr>
-    <tr>
       <th>...</th>
       <td>...</td>
       <td>...</td>
@@ -17675,306 +17372,6 @@ We then combine the two dataframes in <code>combined_resignations</code> and, to
       <td>...</td>
       <td>...</td>
       <td>...</td>
-    </tr>
-    <tr>
-      <th>659</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Temporary Part-time</td>
-      <td>Female</td>
-      <td>46.0</td>
-      <td>1.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>660</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>41.0</td>
-      <td>3.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>661</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Permanent Full-time</td>
-      <td>Female</td>
-      <td>46.0</td>
-      <td>5.5</td>
-      <td>True</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>665</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>666</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>669</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Temporary Full-time</td>
-      <td>Female</td>
-      <td>26.0</td>
-      <td>3.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>670</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>671</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Teacher (including LVT)</td>
-      <td>Temporary Full-time</td>
-      <td>Female</td>
-      <td>46.0</td>
-      <td>0.5</td>
-      <td>True</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>675</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Teacher (including LVT)</td>
-      <td>Temporary Full-time</td>
-      <td>Male</td>
-      <td>51.0</td>
-      <td>0.5</td>
-      <td>True</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>676</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Contract/casual</td>
-      <td>Female</td>
-      <td>41.0</td>
-      <td>1.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>677</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Temporary Full-time</td>
-      <td>Female</td>
-      <td>36.0</td>
-      <td>0.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>678</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>51.0</td>
-      <td>3.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>679</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Operational (OO)</td>
-      <td>Temporary Part-time</td>
-      <td>Female</td>
-      <td>56.0</td>
-      <td>1.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>681</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Temporary Full-time</td>
-      <td>Female</td>
-      <td>26.0</td>
-      <td>0.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>682</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>26.0</td>
-      <td>0.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>683</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Temporary Full-time</td>
-      <td>Female</td>
-      <td>41.0</td>
-      <td>0.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>684</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Contract/casual</td>
-      <td>Male</td>
-      <td>41.0</td>
-      <td>3.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>685</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Technical Officer (TO)</td>
-      <td>Temporary Full-time</td>
-      <td>Female</td>
-      <td>26.0</td>
-      <td>1.5</td>
-      <td>True</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>686</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Temporary Full-time</td>
-      <td>Female</td>
-      <td>41.0</td>
-      <td>5.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>688</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Professional Officer (PO)</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>46.0</td>
-      <td>5.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>689</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Teacher (including LVT)</td>
-      <td>Permanent Full-time</td>
-      <td>Male</td>
-      <td>41.0</td>
-      <td>0.5</td>
-      <td>True</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>690</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>691</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Operational (OO)</td>
-      <td>Permanent Part-time</td>
-      <td>Female</td>
-      <td>56.0</td>
-      <td>3.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>693</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>Administration (AO)</td>
-      <td>Temporary Full-time</td>
-      <td>Female</td>
-      <td>26.0</td>
-      <td>1.5</td>
-      <td>False</td>
-      <td>TAFE</td>
-    </tr>
-    <tr>
-      <th>694</th>
-      <td>Resignation</td>
-      <td>2013.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>False</td>
-      <td>TAFE</td>
     </tr>
     <tr>
       <th>696</th>
@@ -18052,7 +17449,7 @@ We then combine the two dataframes in <code>combined_resignations</code> and, to
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Let us now turn values in the <code>instituute_service</code> to more directly useful ones.
-<a href="https://www.businesswire.com/news/home/20171108006002/en/Age-Number-Engage-Employees-Career-Stage">This article from BusinessWire</a> reports that the institute <a href="https://padillaco.com/">Padilla</a> defines four key career stages: Newbie (3 years of experience or less), Sophomore (4 to 7 years of experience), Tenured (8 to 10 yers), and Sage (11 years or more). 
+<a href="https://www.businesswire.com/news/home/20171108006002/en/Age-Number-Engage-Employees-Career-Stage">This article from BusinessWire</a> reports that the institute <a href="https://padillaco.com/">Padilla</a> defines four key career stages: Newbie (3 years of experience or less), Sophomore (4 to 7 years of experience), Tenured (8 to 10 years), and Sage (11 years or more). 
 Let us use this classification.</p>
 
 </div>
@@ -18065,7 +17462,7 @@ Let us use this classification.</p>
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">float_to_padilla_stage</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the Padilla career stage associated corresponding to having worked int(x) years at a company</span>
+<span class="sd">    returns the Padilla career stage corresponding to having worked int(x) years at a company</span>
 <span class="sd">    x: float</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -18194,19 +17591,250 @@ Let us now use a pivot table to compute the fraction of dissatisfied employees f
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>It seems that <strong>employees at the “Newbie” career stage are notably less likely to resign because they are dissatisfied with their jobs than their more experienced co-workers</strong>. 
 The differences between results for the other carreer stages are not statistically significant.</p>
+<p>Let us now compute the fraction of dissatisfied employees for each age range.</p>
 
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># pivot table: percentages of dissatisfied employees</span>
+<span class="n">dissatisfied_vs_age</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">combined_resignations</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="s1">&#39;dissatisfied&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="n">aggfunc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+<span class="c1"># pivot table: standard error</span>
+<span class="n">dissatisfied_vs_age_ste</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">combined_resignations</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="s1">&#39;dissatisfied&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="n">aggfunc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+<span class="c1"># labels</span>
+<span class="n">labels_age</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;≤ 20&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">41</span><span class="p">,</span> <span class="mi">46</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">56</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;&gt; 60&#39;</span><span class="p">]</span>
+
+<span class="c1"># bar plot</span>
+<span class="c1"># the error bars correspond to one standard error up and down</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">dissatisfied_vs_age</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span> <span class="o">=</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">dissatisfied_vs_age_ste</span><span class="p">[</span><span class="s1">&#39;dissatisfied&#39;</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Age&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">labels_age</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">% d</span><span class="s1">issatisfied&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">([])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><font style="color:rgb(0,100,200)"><b>
-    To do: <ul>
-        <li> See if the dissatisfaction rate varies with age. </li>
-        <li> See if there are statistically significant differences between the two datasets. </li>
-    </ul>
-</b></font></p>
+<p>There seems to be no statistically significant differences between the different age ranges. 
+To reduce the error bars, let us group them by decades.
+We first add a column <code>decade</code> to <code>combined_resignations</code>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">age_to_decade</span><span class="p">(</span><span class="n">age</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">age</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">age</span>
+    <span class="k">elif</span> <span class="n">age</span> <span class="o">==</span> <span class="mf">20.</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39; ≤ 20&#39;</span> <span class="c1"># trailing space to make it appear before the other values in the bar plot</span>
+    <span class="k">elif</span> <span class="n">age</span> <span class="o">==</span> <span class="mf">61.</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&gt; 60&#39;</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">dec</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">age</span><span class="o">/</span><span class="mi">10</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dec</span><span class="o">+</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">combined_resignations</span><span class="p">[</span><span class="s1">&#39;decade&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">combined_resignations</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">age_to_decade</span><span class="p">)</span>
+<span class="n">combined_resignations</span><span class="p">[</span><span class="s1">&#39;decade&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[30]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>40-49    174
+30-39    134
+20-29    129
+50-59    126
+&gt; 60      23
+ ≤ 20     10
+Name: decade, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We then plot the percentage of dissatisfied employees for each decade:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[31]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># pivot table: percentages of dissatisfied employees</span>
+<span class="n">dissatisfied_vs_decade</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">combined_resignations</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="s1">&#39;dissatisfied&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="s1">&#39;decade&#39;</span><span class="p">,</span> <span class="n">aggfunc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+<span class="c1"># pivot table: standard error</span>
+<span class="n">dissatisfied_vs_decade_ste</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">combined_resignations</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="s1">&#39;dissatisfied&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="s1">&#39;decade&#39;</span><span class="p">,</span> <span class="n">aggfunc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+<span class="c1"># bar plot</span>
+<span class="c1"># the error bars correspond to one standard error up and down</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">dissatisfied_vs_decade</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span> <span class="o">=</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">dissatisfied_vs_decade_ste</span><span class="p">[</span><span class="s1">&#39;dissatisfied&#39;</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Age&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">% d</span><span class="s1">issatisfied&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">([])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There is, again, no statistically significant difference.</p>
+<p>Finally, let us see if there are differences between the dissatisfaction rates at each career stage in the DETE and TAFE.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># pivot tables</span>
+<span class="n">dissatisfied_vs_career_stage_dete</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">combined_resignations</span><span class="p">[</span><span class="n">combined_resignations</span><span class="p">[</span><span class="s1">&#39;institute&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;DETE&#39;</span><span class="p">],</span> <span class="n">values</span> <span class="o">=</span> <span class="s1">&#39;dissatisfied&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="s1">&#39;institute_service&#39;</span><span class="p">,</span> <span class="n">aggfunc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="n">dissatisfied_vs_career_stage_tafe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">combined_resignations</span><span class="p">[</span><span class="n">combined_resignations</span><span class="p">[</span><span class="s1">&#39;institute&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TAFE&#39;</span><span class="p">],</span> <span class="n">values</span> <span class="o">=</span> <span class="s1">&#39;dissatisfied&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="s1">&#39;institute_service&#39;</span><span class="p">,</span> <span class="n">aggfunc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dissatisfied_vs_career_stage_dete</span><span class="p">,</span> <span class="n">dissatisfied_vs_career_stage_tafe</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DETE&#39;</span><span class="p">,</span> <span class="s1">&#39;TAFE&#39;</span><span class="p">]</span>
+
+<span class="c1"># pivot tables: standard error</span>
+<span class="n">dissatisfied_vs_career_stage_ste_dete</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">combined_resignations</span><span class="p">[</span><span class="n">combined_resignations</span><span class="p">[</span><span class="s1">&#39;institute&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;DETE&#39;</span><span class="p">],</span> <span class="n">values</span> <span class="o">=</span> <span class="s1">&#39;dissatisfied&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="s1">&#39;institute_service&#39;</span><span class="p">,</span> <span class="n">aggfunc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+<span class="n">dissatisfied_vs_career_stage_ste_tafe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">combined_resignations</span><span class="p">[</span><span class="n">combined_resignations</span><span class="p">[</span><span class="s1">&#39;institute&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TAFE&#39;</span><span class="p">],</span> <span class="n">values</span> <span class="o">=</span> <span class="s1">&#39;dissatisfied&#39;</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="s1">&#39;institute_service&#39;</span><span class="p">,</span> <span class="n">aggfunc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+<span class="n">df_ste</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">dissatisfied_vs_career_stage_ste_dete</span><span class="p">,</span> <span class="n">dissatisfied_vs_career_stage_ste_tafe</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">df_ste</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DETE&#39;</span><span class="p">,</span> <span class="s1">&#39;TAFE&#39;</span><span class="p">]</span>
+
+<span class="c1"># bar plot</span>
+<span class="c1"># the error bars correspond to one standard error up and down</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span> <span class="o">=</span> <span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="n">df_ste</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Career stage&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">% d</span><span class="s1">issatisfied&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It seems that:</p>
+<ul>
+<li><strong>More employees from the DETE resign because of dissatisfaction than employees of the TAFE</strong>.</li>
+<li><strong>The percentage of employees who resign because fo dissatisfaction is independent of the career stage at the TAFE, but larger for employees with more than 3 years of experience at the DETE.</strong> </li>
+</ul>
+<h2 id="Conclusion">Conclusion<a class="anchor-link" href="#Conclusion">&#182;</a></h2><p>In this project, we briefly analyzed data from exit surveys of employees at the DETE and TAFE carried in 2014 and 2013. 
+We found that a larger fraction of employees from the DETE with more than 3 years of experience resigned because of dissatisfaction with their job. 
+This may indicate that the DETE could keep more of its experienced employees by improving their working conditions.</p>
 
 </div>
 </div>
