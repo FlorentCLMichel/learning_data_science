@@ -328,6 +328,56 @@ class MaxPool{
 
 #include "MaxPool.cpp"
 
+// A standard fully-connected layer with sigmoid activation function
+class FullCon{
+	
+	private: 
+
+		d2_array_type weights;
+		vector<double> biases;
+		vector<double> output;
+		
+	public:	
+
+		FullCon(){}
+
+		FullCon(int input_len, int output_len, 
+			    	std::mt19937 gen, std::normal_distribution<> dis);
+
+		vector<double> last_input;
+
+		// save the layer to a file
+		void save(ofstream& file);
+
+		// load the layer from a file
+		void load(ifstream& file);
+	
+		// forward pass
+		vector<double> forward(vector<double> &input);
+			
+		// Performs a backward pass of the softmax layer and returns the loss 
+		// gradient with respect to the input.
+		// d_L_d_out: gradient of the loss function against the output
+		vector<double> backprop(vector<double> &d_L_d_out, double learn_rate);
+
+		// test function: forward
+		np::ndarray test_forward(np::ndarray input){
+			vector<double> array = numpy_to_vector(input);
+			vector<double> array2 = forward(array);
+			return vector_to_numpy(array2);
+		}
+
+		// test function: backprop
+		np::ndarray test_backprop(np::ndarray d_L_d_out, double learn_rate){
+			vector<double> d_L_d_out_ = numpy_to_vector(d_L_d_out);
+			vector<double> d_L_d_input = backprop(d_L_d_out_, learn_rate);
+			return vector_to_numpy(d_L_d_input);
+		}
+
+};
+
+#include "FullCon.cpp"
+
 // A standard fully-connected layer with softmax activation
 class SoftMax{
 	
@@ -344,7 +394,7 @@ class SoftMax{
 		SoftMax(int input_len, int output_len, 
 			    	std::mt19937 gen, std::normal_distribution<> dis);
 
-		d3_array_type last_input;
+		vector<double> last_input;
 
 		// save the layer to a file
 		void save(ofstream& file);
@@ -353,16 +403,16 @@ class SoftMax{
 		void load(ifstream& file);
 	
 		// forward pass
-		vector<double> forward(d3_array_type &input);
+		vector<double> forward(vector<double> &input);
 			
 		// Performs a backward pass of the softmax layer and returns the loss 
 		// gradient with respect to the input.
 		// d_L_d_out: gradient of the loss function against the output
-		d3_array_type backprop(vector<double> &d_L_d_out, double learn_rate);
+		vector<double> backprop(vector<double> &d_L_d_out, double learn_rate);
 
 		// test function: forward
 		np::ndarray test_forward(np::ndarray input){
-			d3_array_type array = d3_numpy_to_multi_array(input);
+			vector<double> array = numpy_to_vector(input);
 			vector<double> array2 = forward(array);
 			return vector_to_numpy(array2);
 		}
@@ -370,8 +420,8 @@ class SoftMax{
 		// test function: backprop
 		np::ndarray test_backprop(np::ndarray d_L_d_out, double learn_rate){
 			vector<double> d_L_d_out_ = numpy_to_vector(d_L_d_out);
-			d3_array_type d_L_d_input = backprop(d_L_d_out_, learn_rate);
-			return d3array_to_numpy(d_L_d_input);
+			vector<double> d_L_d_input = backprop(d_L_d_out_, learn_rate);
+			return vector_to_numpy(d_L_d_input);
 		}
 
 };

@@ -15,7 +15,7 @@ void SoftMax::save(ofstream& file){
 	save_2d_array(weights, file);
 	save_vector(biases, file);
 	save_vector(exp_totals, file);
-	save_3d_array(last_input, file);
+	save_vector(last_input, file);
 }
 
 void SoftMax::load(ifstream& file){
@@ -28,13 +28,10 @@ void SoftMax::load(ifstream& file){
 	
 	exp_totals = load_vector<double>(file);
 
-	d3_array_type last_input_ = load_3d_array(file);
-	auto shape_last_input = last_input_.shape();
-	last_input.resize(boost::extents[shape_last_input[0]][shape_last_input[1]][shape_last_input[2]]);
-	last_input = last_input_;
+	vector<double> last_input = load_vector<double>(file);
 }
 
-vector<double> SoftMax::forward(d3_array_type &input){
+vector<double> SoftMax::forward(vector<double> &input){
 	
 	// clear the vector of totals 
 	exp_totals.clear();
@@ -42,25 +39,15 @@ vector<double> SoftMax::forward(d3_array_type &input){
 	vector<double> output;
 	int n_nodes = weights.shape()[0]; // number of nodes
 
-	// number and dimensions of images
-	int nim = input.shape()[0];
-	int h = input.shape()[1];
-	int w = input.shape()[2];
-
 	// cache the input
-	last_input.resize(boost::extents[nim][h][w]);
 	last_input = input;
 	
 	// compute totals
 	vector<double> totals;
 	for(int k=0; k<n_nodes; k++){
 		totals.push_back(biases[k]);
-		for(int n=0; n<nim; n++){
-			for(int i=0; i<h; i++){
-				for(int j=0; j<w; j++){
-					totals[k] += weights[k][n*h*w+i*w+j] * input[n][i][j];
-				}
-			}
+		for(int n=0; n<input.size(); n++){
+			totals[k] += weights[k][n] * input[n];
 		}
 	}
 
@@ -80,15 +67,11 @@ vector<double> SoftMax::forward(d3_array_type &input){
 	return output;
 }
 		
-d3_array_type SoftMax::backprop(vector<double> &d_L_d_out, double learn_rate){
+vector<double> SoftMax::backprop(vector<double> &d_L_d_out, double learn_rate){
 	
-	// number of nodes
+	// number of nodes and input size
 	int n_nodes = d_L_d_out.size();
-
-	// number and dimensions of images
-	int nim = last_input.shape()[0];
-	int h = last_input.shape()[1];
-	int w = last_input.shape()[2];
+	int len_input = last_input.size();
 
 	// We use that d_L_d_out is different from zero only for i = label
 	for(int i=0; i<d_L_d_out.size(); ++i){
@@ -125,22 +108,18 @@ d3_array_type SoftMax::backprop(vector<double> &d_L_d_out, double learn_rate){
 			* d_totals_d_bias is the identity matrix
 			* d_totals_d_inputs = weights                        */				
 
-		d2_array_type d_L_d_w(boost::extents[n_nodes][nim*h*w]);
-		d3_array_type d_L_d_inputs(boost::extents[last_input.shape()[0]][last_input.shape()[1]][last_input.shape()[2]]);
+		d2_array_type d_L_d_w(boost::extents[n_nodes][last_input.size()]);
+		vector<double> d_L_d_inputs;
 		
-		for(int n=0; n<nim; n++){
-			for(int i=0; i<h; i++){
-				for(int j=0; j<w; j++){
-					d_L_d_inputs[n][i][j] = 0.;
-					for(int l=0; l<n_nodes; l++){
-						d_L_d_w[l][n*h*w+i*w+j] = d_L_d_t[l] * last_input[n][i][j];
-						
-						d_L_d_inputs[n][i][j] += d_L_d_t[l] * weights[l][n*h*w+i*w+j];
+		for(int n=0; n<last_input.size(); n++){
+			d_L_d_inputs.push_back(0.);
+			for(int l=0; l<n_nodes; l++){
+				d_L_d_w[l][n] = d_L_d_t[l] * last_input[n];
+				
+				d_L_d_inputs[n] += d_L_d_t[l] * weights[l][n];
 		
-						// update weights
-						weights[l][n*h*w+i*w+j] -= learn_rate * d_L_d_w[l][n*h*w+i*w+j];
-					}
-				}
+				// update weights
+				weights[l][n] -= learn_rate * d_L_d_w[l][n];
 			}
 		}
 

@@ -1,57 +1,7 @@
-## A little test
-#
-#import numpy as np
-#import CNN1_cpp
-#import subprocess
-#from random import randrange
-#
-#img_w = 5
-#img_h = 5
-#CL_size_filters = [2,2]
-#CL_num_filters = [3,4]
-#MP_size = [2,1]
-#num_labels = 2
-#
-#n_train_steps = 100000
-#learn_rate = 0.005
-#
-#n_steps_between_prints = 1000
-#
-#test_CNN1 = CNN1_cpp.CNN1(img_w, img_h, CL_size_filters, CL_num_filters, MP_size, num_labels)
-#
-#ims = [np.array([[0.,0.,0.,0.,0.],
-#                [0.,1.,0.,0.,0.],
-#				[0.,0.,0.,0.,0.],
-#				[0.,0.,0.,0.,0.],
-#				[0.,0.,0.,0.,0.]]),
-#      np.array([[0.,0.,0.,0.,0.],
-#                [0.,0.,0.,0.,0.],
-#				[0.,0.,0.,0.,0.],
-#				[0.,0.,0.,1.,0.],
-#				[0.,0.,0.,0.,0.]])]
-#
-#print('forward:')
-#print(test_CNN1.forward(ims[0]))
-#test_CNN1.save('test.txt')
-#for i in range(n_train_steps):
-#	label = randrange(2)
-#	results = test_CNN1.train(ims[label], label, learn_rate)
-#	if i % n_steps_between_prints == 0:
-#		print('Training step {:d}: Label: {:d} Loss: {:f} \nAccuracy: {:d}'.format(i+1, label, results[0], results[1]))
-#		print()
-#print('forward with the trained CNN:')
-#print(test_CNN1.forward(ims[0]))
-#print()
-#print('load the CNN before training and forward:')
-#test_CNN1_bis = CNN1_cpp.CNN1()
-#test_CNN1_bis.load('test.txt')
-#print(test_CNN1_bis.forward(ims[0]))
-#
-#subprocess.run(["trash", "test.txt"])
-
 '''
 Application of the CNN from CNN1_cpp to the MNIST database
 This CNN is not optimal
+It seems to be overfitted to the training data
 '''
 
 import os
@@ -63,7 +13,7 @@ save_file_name = 'MNIST_CNN_1.cnn'
 
 # parameters
 n_train_images = 60000 # number of images for the training
-n_epochs = 5 # number of epochs
+n_epochs = 10 # number of epochs
 n_test_images = 10000 # number of images for the test
 n_print = 4000 # accuracy printed every n_print training steps
 learn_rate = 0.005 # learning rate
@@ -79,13 +29,15 @@ train_labels = mnist.train_labels()[:n_train_images]
 test_images = normalize(mnist.test_images()[:n_test_images])
 test_labels = mnist.test_labels()[:n_test_images]
 
-# CNN with 2 convolution layers
+# CNN with 2 convolution layers and 2 fully connected layers (including the Softmax one)
+# The hyperparameters are not tuned—this network is thus probably not very efficient
 
 img_w = 28 # images have size 28 by 28
 img_h = 28
-CL_size_filters = [3,3]
-CL_num_filters = [8,4]
+CL_size_filters = [5,3]
+CL_num_filters = [4,8]
 MP_size = [2,2]
+FC_size = [20]
 num_labels = 10 # 10 different possible labels
 
 # build and train the CNN if it does not exist
@@ -94,7 +46,7 @@ if not os.path.exists(save_file_name):
 	
 	import matplotlib.pyplot as plt
 
-	CNN1_1 = CNN1_cpp.CNN1(img_w, img_h, CL_size_filters, CL_num_filters, MP_size, num_labels)
+	CNN1_1 = CNN1_cpp.CNN1(img_w, img_h, CL_size_filters, CL_num_filters, MP_size, FC_size, num_labels)
 
 	print('MNIST CNN initialized') 
 

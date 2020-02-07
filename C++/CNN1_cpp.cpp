@@ -33,19 +33,24 @@ class CNN1{
 	private: 
 
 		int num_CLs; // number of convolution layers
+		int num_FCs; // number of FullCon layers
 		int img_h_i; // image height
 		int img_w_i; // image width
+		int img_h; // image height before the fully connected layers
+		int img_w; // image width before the fully connected layers
 		int num_images; // number of images
 		int num_labels; // number of different possible labels
 		
 		vector<int> CL_size_filters; // Convolution layers: filter sizes
 		vector<int> CL_num_filters; // Convolution layers: numbers of filters
 		vector<int> MP_size; // Maxpool layers: pool sizes
+		vector<int> FC_size; // FullCon layers: number of neurons
 		
 		// These four vectors will contain the layers
 		vector<ConvLayer> CLs; // Convolution layers
 		vector<ReLU> RLUs; // ReLU layers
 		vector<MaxPool> MPs; // Maxpool layers
+		vector<FullCon> FCs; // FullCon layers
 		vector<SoftMax> SMs; // Softmax layers
 
 	public: 
@@ -55,26 +60,29 @@ class CNN1{
 		}	
 
 		CNN1(
-			int img_w_i_, // image width 
-			int img_h_i_, // image height
+			int img_w_, // image width 
+			int img_h_, // image height
 			p::list& CL_size_filters_, // list of filter sizes
 			p::list& CL_num_filters_, // list of numbers of filters
 			p::list& MP_size_, // list of pool sizes
+			p::list& FC_size_, // list of FullCon sizes
 			int num_labels_ // number of diffeent possible labels
 		) 
 		{
 			// initialization
-			img_w_i = img_w_i_;
-			img_h_i = img_h_i_;
+			img_w_i = img_w_;
+			img_h_i = img_h_;
+			img_w = img_w_;
+			img_h = img_h_;
 			num_labels = num_labels_;
 			CL_size_filters = int_list_to_vector(CL_size_filters_);
 			CL_num_filters = int_list_to_vector(CL_num_filters_);
 			MP_size = int_list_to_vector(MP_size_);
+			FC_size = int_list_to_vector(FC_size_);
 			num_CLs = len(CL_size_filters_);
+			num_FCs = len(FC_size_);
 			
 			num_images = 1; // tracks the number of images
-			int img_w = img_w_i; // tracks the width of images 
-			int img_h = img_h_i; // tracks the height of images
 
 			// build the layers
 			for(int i=0; i<num_CLs; i++){
@@ -87,7 +95,13 @@ class CNN1{
 				img_w = (int) img_w / MP_size[i];
 				img_h = (int) img_h / MP_size[i];
 			}
-			SMs.push_back(SoftMax(num_images*img_h*img_w, num_labels, gen, dis));
+			long int n_inputs = num_images*img_h*img_w;
+			for(int i=0; i<num_FCs; i++){
+				int n_neurons = FC_size[i];
+				FCs.push_back(FullCon(n_inputs, n_neurons, gen, dis));
+				n_inputs = n_neurons;
+			}
+			SMs.push_back(SoftMax(n_inputs, num_labels, gen, dis));
 
 			np::initialize(); // required to create numpy arrays (otherwise leads to segmentation faults)
 		}
@@ -97,7 +111,7 @@ class CNN1{
 			ofstream file;
 			file.open(filename);
 			file << fixed << setprecision(prec_write_file);
-			file << num_CLs << sep_val << img_w_i << sep_val << img_h_i << sep_val << num_images << sep_line;
+			file << num_CLs << sep_val << num_FCs << sep_val << img_w_i << sep_val << img_h_i << sep_val << img_w << sep_val << img_h << sep_val << num_images << sep_line;
 			save_vector(CL_size_filters, file);
 			save_vector(CL_num_filters, file);
 			save_vector(MP_size, file); 
@@ -105,6 +119,9 @@ class CNN1{
 				CLs[i].save(file);
 				RLUs[i].save(file);
 				MPs[i].save(file);
+			}
+			for(int i=0; i<num_FCs; i++){
+				FCs[i].save(file);
 			}
 			SMs[0].save(file);
 			file.close();
@@ -115,7 +132,7 @@ class CNN1{
 			ifstream file;
 			file.open(filename);
 			char c;
-			file >> num_CLs >> c >> img_w_i >> c >> img_h_i >> c >> num_images >> c;
+			file >> num_CLs >> c >> num_FCs >> c >> img_w_i >> c >> img_h_i >> c >> img_w >> c >> img_h >> c >> num_images >> c;
 			CL_size_filters = load_vector<int>(file);
 			CL_num_filters = load_vector<int>(file);
 			MP_size = load_vector<int>(file); 
@@ -131,6 +148,10 @@ class CNN1{
 				MPs.push_back(MaxPool());
 				MPs[i].load(file);
 			}
+			for(int i=0; i<num_FCs; i++){
+				FCs.push_back(FullCon());
+				FCs[i].load(file);
+			}
 			SMs.push_back(SoftMax());
 			SMs[0].load(file);
 			file.close();
@@ -140,43 +161,68 @@ class CNN1{
 		vector<double> forward(d3_array_type &input){
 			
 			// number and dimensions of images
-			int nim = input.shape()[0];
 			int h = input.shape()[1];
 			int w = input.shape()[2];
 			if(h != img_h_i || w != img_w_i){
-				cout << "\nInput dimension not divisible by the pool size—information will be lost!\n" << endl;
+				cout << "\nInvalid input dimensions!\n" << endl;
 			}
 			for(int i=0; i<num_CLs; i++){
 				d3_array_type output1 = CLs[i].forward(input);
 				input.resize(boost::extents[output1.shape()[0]][output1.shape()[1]][output1.shape()[2]]);
 				input = output1;
 
-				d3_array_type output2 = RLUs[i].forward(input);
+				d3_array_type output2 = MPs[i].forward(input);
 				input.resize(boost::extents[output2.shape()[0]][output2.shape()[1]][output2.shape()[2]]);
 				input = output2;
 
-				d3_array_type output3 = MPs[i].forward(input);
+				d3_array_type output3 = RLUs[i].forward(input);
 				input.resize(boost::extents[output3.shape()[0]][output3.shape()[1]][output3.shape()[2]]);
 				input = output3;
 			}
-			return SMs[0].forward(input);
+		
+			vector<double> input_vec;
+			auto input_shape = input.shape();
+			for(int i=0; i<num_images; i++){
+				for(int j=0; j<img_h; j++){
+					for(int k=0; k<img_w; k++){
+						input_vec.push_back(input[i][j][k]);
+					}
+				}
+			}
+			
+			for(int i=0; i<num_FCs; i++){
+				input_vec = FCs[i].forward(input_vec);
+			}
+			
+			return SMs[0].forward(input_vec);
 		}
 		
 		// backpropagation
 		void backprop(vector<double> d_L_d_out_i, double learn_rate){
 			
-			auto shape = SMs[0].last_input.shape();
-			d3_array_type d_L_d_in(boost::extents[shape[0]][shape[1]][shape[2]]); 
+			d3_array_type d_L_d_in(boost::extents[num_images][img_h][img_w]); 
 		
-			d_L_d_in = SMs[0].backprop(d_L_d_out_i, learn_rate);
+			vector<double> d_L_d_in_vec = SMs[0].backprop(d_L_d_out_i, learn_rate);
+			
+			for(int i=num_FCs-1; i>=0; i--){
+				d_L_d_in_vec = FCs[i].backprop(d_L_d_in_vec, learn_rate);
+			}
+			
+			for(int i=0; i<num_images; i++){
+				for(int j=0; j<img_h; j++){
+					for(int k=0; k<img_w; k++){
+						d_L_d_in[i][j][k] = d_L_d_in_vec[i*img_h*img_w + j*img_w + k];
+					}
+				}
+			}
 			
 			for(int i=num_CLs-1; i>=0; i--){
-				d3_array_type d_L_d_in3 = MPs[i].backprop(d_L_d_in);
-				shape = d_L_d_in3.shape();
+				d3_array_type d_L_d_in3 = RLUs[i].backprop(d_L_d_in);
+				auto shape = d_L_d_in3.shape();
 				d_L_d_in.resize(boost::extents[shape[0]][shape[1]][shape[2]]);
 				d_L_d_in = d_L_d_in3;
 			
-				d3_array_type d_L_d_in2 = RLUs[i].backprop(d_L_d_in);
+				d3_array_type d_L_d_in2 = MPs[i].backprop(d_L_d_in);
 				shape = d_L_d_in2.shape();
 				d_L_d_in.resize(boost::extents[shape[0]][shape[1]][shape[2]]);
 				d_L_d_in = d_L_d_in2;
@@ -324,7 +370,7 @@ class CNN1{
 
 BOOST_PYTHON_MODULE(CNN1_cpp)
 {
-    p::class_<CNN1>("CNN1", p::init<int, int, p::list&, p::list&, p::list&, int>())
+    p::class_<CNN1>("CNN1", p::init<int, int, p::list&, p::list&, p::list&, p::list&, int>())
 		.def(p::init<>())
 		.def("test_forward_CL", &CNN1::test_forward_CL)
 		.def("test_backprop_CL", &CNN1::test_backprop_CL)
