@@ -14,7 +14,10 @@ Data Analyst Task.xlsx: envoyé par Ahmed Aqueel de la part de WhoCanFixMyCar
 gb.csv: https://simplemaps.com/data/gb-cities (03/12/2019)
 StarWars.csv: https://github.com/fivethirtyeight/data/tree/cc60359f154fc522333ccc81055e8512a1057414/star-wars-survey (13/12/2019)
 factbook.db: https://github.com/factbook/factbook.sql/releases (05/01/2020)
-
+chinook.db: https://app.dataquest.io/m/191/guided-project%3A-answering-business-questions-using-sql (07/01/2020)
+chinook_unmodified.db: copy of chinook.db
+017-fCC-New-Coders-Survey-Data.csv: https://github.com/freeCodeCamp/2017-new-coder-survey (10/02/2020)
+vim 2017-new-coder-survey-part_questions.csv: reduced from a file downloaded on https://github.com/freeCodeCamp/2017-new-coder-survey (10/02/2020)
 
 data in NYC_schools (all downloaded on 05/12/2019): 
 	https://data.cityofnewyork.us/Education/2012-SAT-Results/f9bf-2cp4
@@ -30,3 +33,7 @@ data in NYC_schools (all downloaded on 05/12/2019):
 data in MNIST: http://yann.lecun.com/exdb/mnist/ (23/12/2019)
 
 data in Retrosheet_DQ https://www.retrosheet.org/gamelogs/index.html (11/01/2020)
+
+Fandango_ratings/fandango_score_comparison/csv and Fandango_ratings/fandango_scrape.csv: https://github.com/fivethirtyeight/data/tree/master/fandango (30/01/2020)
+
+Fandango_ratings/movie_ratings_16_17.csv: https://github.com/mircealex/Movie_ratings_2016_17 (30/01/2020)
