@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>4_69_lottery_probabilities</title>
+<title>6_49_lottery_probabilities</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13120,10 +13120,10 @@ div#notebook {
 Winning numbers are drawn every Wednesday and Saturday by the Interprovincial Lottery Corporation. 
 Each time, 6 numbers are drawn wthout replacement from a set of 49, plus a bonus number. 
 A player wins money if at least two of the first six are among the numbers they chose. 
-The largest amount, called the ‘jackpot prize’, is won if the six numbers match.</p>
+To win the hoghest amount, called the ‘jackpot prize’, a player must have the first six correct numbers.</p>
 <p>Although most people start playing the lottery for fun, it can also turn into an addiction or some players, with potentially disastrous consequences. 
-One important factor in the development of such addictions is that communication is centred on the large amount of money the jackpot prize represents and change of life it can entail. 
-This focus on a technically possible but unlikely outcome can overshadow how small it probability is, or, more prosaically, that a player is unlikely to win anything at all.</p>
+One important factor in the development of such addictions is the communication centred on the large amount of money the jackpot prize represents and on the change of life it can entail. 
+This focus on a technically possible but unlikely outcome can overshadow how small its probability is, or, more prosaically, that a player is unlikely to win anything at all.</p>
 <p>In this short project, I will estimate some winning likelihoods, in the hope that realizing their smallness may help prevent addiction. 
 I shall mostly use basic Python, in an effort to make the code as transparent as possible, and since the relatively small numbers involved do not require a lot of computing power. 
 I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the functions defined here on very large integers.</p>
@@ -13171,7 +13171,7 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Let us also define the function <code>approximate_fraction_num</code> taking a float and returning a fraction close to it. 
-It takes an oprtional parameter <code>max_num</code>, equal to 10 by default, representing the maximum acceptable value for the numerator.</p>
+It takes an optional parameter <code>max_num</code>, equal to 10 by default, representing the maximum acceptable value for the numerator.</p>
 
 </div>
 </div>
@@ -13282,7 +13282,6 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>The probability of winning the jackpot prize is smaller than one over ten millions, which is rather small.</p>
 <h3 id="Would-I-have-won?">Would I have won?<a class="anchor-link" href="#Would-I-have-won?">&#182;</a></h3><p>To get more intuition about how small this number is, we want to write a function taking a six-numbers input and telling if, assuming this set was played many times, it would have won the jackpot prize at least once. 
-And, experimenting with it, seeing that the answer is “no” for most possible choices. 
 To this end, we first load the dataset <code>649.csv</code>, containing results from previous draws.</p>
 
 </div>
@@ -13558,7 +13557,7 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This dataset contains results from all drawings occurring before 21st June 2018. 
+<p>This dataset contains results from all drawings that occurred before 21st June 2018. 
 Let us use it to build the list <code>drawings_6</code> of all drawings, excluding the bonus number. 
 We cast them as sets since the order is not important.</p>
 
@@ -13645,7 +13644,7 @@ False
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us now do a small experiment: we select a large number (say, 1000) of (not necessarily different) sets of six numbers at random, and count how much of them have been drawn at least once:</p>
+<p>Let us now do a small experiment: we select a large number (say, 10000) of (not necessarily different) sets of six numbers at random, and count how much of them have been drawn at least once:</p>
 
 </div>
 </div>
@@ -13706,7 +13705,10 @@ The probability for a given set to be drawn one specific day is thus quite small
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="Winning-the-jackpot-price-with-several-tickets">Winning the jackpot price with several tickets<a class="anchor-link" href="#Winning-the-jackpot-price-with-several-tickets">&#182;</a></h3><p>Assuming we play $l$ different valid tickets, where $l$ is a positive integer, the probability $P_l(J)$ to win the jackpot prize is:
 $$P_l(J) = l \times P_1(J).$$
-From the above results, having a probability of just 1 in 10 of winning would require playing more than one million tickets.</p>
+From the above results, having a probability of just 1 in 10 of winning would require playing more than one million sets of numbers. 
+At the time of writing (21 April 2020), the cost of playing six numbers is CAD3. 
+Having a probability to win the jackpot prize of more than one half requires buying more than 5,000,000 of them, for a total cost of CAD15,000,000. 
+Since the jackpot prize is only CAD6,000,000 at the moment, this would incur a large loss of money even if winning.</p>
 <h3 id="Having-a-few-matching-numbers">Having a few matching numbers<a class="anchor-link" href="#Having-a-few-matching-numbers">&#182;</a></h3><p>We now focus on smaller prizes. 
 The function <code>proba_prize</code> below takes 4 inputs:</p>
 <ul>
@@ -13841,6 +13843,109 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>All these probabilities are rather small. 
 Even the probability of having just two matching numbers, which, under the current rules (as of 12/02/2020) is the lowest possible prize and gives only a free ticket, is just one in six.</p>
+<h2 id="Average-win-(or-loss)">Average win (or loss)<a class="anchor-link" href="#Average-win-(or-loss)">&#182;</a></h2><p>Finally, let us compute the average gain for each play, using data from <a href="https://lotto.bclc.com/lotto-649-and-extra/prizes-and-odds.html">the bclc website</a> (valid on 21 April 2020). 
+We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number of players, the average number of players winning the prize is $N P$. The average gain for each player is thue $(P p) / (N P) = p / N$.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
+<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
+
+<span class="c1"># cost of playing in CAD</span>
+<span class="n">cost_line</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="c1"># prize amount in CAD</span>
+<span class="n">prop_in_play</span> <span class="o">=</span> <span class="mf">0.47</span> <span class="c1"># proportion of sales put in play</span>
+
+<span class="c1"># estimate for the number of players</span>
+<span class="c1"># The result actually does no depend on this number as, in each term in the </span>
+<span class="c1"># sum, it appears both on the numerator and denominator. However, we keep </span>
+<span class="c1"># it for clarity. </span>
+<span class="n">number_players</span> <span class="o">=</span> <span class="mi">3000000</span> 
+<span class="n">pools_fund</span> <span class="o">=</span> <span class="n">number_players</span> <span class="o">*</span> <span class="n">cost_line</span> <span class="o">*</span> <span class="n">prop_in_play</span>
+<span class="n">prize_amount</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.795</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.06</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.095</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">]</span>
+
+<span class="n">average_gain</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">prize_amount</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">number_players</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prize_amount</span><span class="p">))])</span> <span class="o">-</span> <span class="n">cost_line</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Average gain: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">average_gain</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Average gain: -1.59
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>On average, a player will thus lose more than half the price of a ticket. 
+Let us see how much a regular player may lose in 10 years.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># average gain * (two days a week) * (average number of days in a year)</span>
+<span class="c1"># * (number of years)</span>
+<span class="n">average_gain</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mf">365.2475</span> <span class="o">*</span> <span class="mi">10</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[13]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>-1659.2609529000001</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>A player playing twice a week for 10 years will, on average, lose more than CAD 1650.</p>
 
 </div>
 </div>
