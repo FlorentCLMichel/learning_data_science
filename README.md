@@ -16,4 +16,6 @@ In Earnings_college_major.ipynb, I study the median earnings and employment rate
 
 In Employees_Exit_Survey.ipynb, I study the reason for resignation of employees from two departments of the Queensland government.
 
+In Predicting_Bike_Rentals.ipynb, I apply a few simple machine learnigng models to predict the number of bikes rented depending on the date, timeof day, and weather conditions.
+
 The folder Python contains Python codes not directly related to a particular Data Analysis project.
