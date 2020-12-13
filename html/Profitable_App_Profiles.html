@@ -13017,45 +13017,6 @@ ul.typeahead-list  > li > a.pull-right {
 .highlight .vm { color: #19177C } /* Name.Variable.Magic */
 .highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
     </style>
-<style type="text/css">
-    
-/* Temporary definitions which will become obsolete with Notebook release 5.0 */
-.ansi-black-fg { color: #3E424D; }
-.ansi-black-bg { background-color: #3E424D; }
-.ansi-black-intense-fg { color: #282C36; }
-.ansi-black-intense-bg { background-color: #282C36; }
-.ansi-red-fg { color: #E75C58; }
-.ansi-red-bg { background-color: #E75C58; }
-.ansi-red-intense-fg { color: #B22B31; }
-.ansi-red-intense-bg { background-color: #B22B31; }
-.ansi-green-fg { color: #00A250; }
-.ansi-green-bg { background-color: #00A250; }
-.ansi-green-intense-fg { color: #007427; }
-.ansi-green-intense-bg { background-color: #007427; }
-.ansi-yellow-fg { color: #DDB62B; }
-.ansi-yellow-bg { background-color: #DDB62B; }
-.ansi-yellow-intense-fg { color: #B27D12; }
-.ansi-yellow-intense-bg { background-color: #B27D12; }
-.ansi-blue-fg { color: #208FFB; }
-.ansi-blue-bg { background-color: #208FFB; }
-.ansi-blue-intense-fg { color: #0065CA; }
-.ansi-blue-intense-bg { background-color: #0065CA; }
-.ansi-magenta-fg { color: #D160C4; }
-.ansi-magenta-bg { background-color: #D160C4; }
-.ansi-magenta-intense-fg { color: #A03196; }
-.ansi-magenta-intense-bg { background-color: #A03196; }
-.ansi-cyan-fg { color: #60C6C8; }
-.ansi-cyan-bg { background-color: #60C6C8; }
-.ansi-cyan-intense-fg { color: #258F8F; }
-.ansi-cyan-intense-bg { background-color: #258F8F; }
-.ansi-white-fg { color: #C5C1B4; }
-.ansi-white-bg { background-color: #C5C1B4; }
-.ansi-white-intense-fg { color: #A1A6B2; }
-.ansi-white-intense-bg { background-color: #A1A6B2; }
-
-.ansi-bold { font-weight: bold; }
-
-    </style>
 
 
 <style type="text/css">
@@ -13143,7 +13104,7 @@ It contains information on 10841 apps, scraped from the Google Play Store in Aug
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># we import the datasets using the csv module. </span>
-<span class="kn">from</span> <span class="nn">csv</span> <span class="k">import</span> <span class="n">reader</span>
+<span class="kn">from</span> <span class="nn">csv</span> <span class="kn">import</span> <span class="n">reader</span>
 
 <span class="c1"># read the files</span>
 <span class="n">file_Apple</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;../Data/AppleStore.csv&#39;</span><span class="p">)</span>
@@ -15003,7 +14964,7 @@ Here, we re-implement the functions <code>ave</code> and <code>std</code> for le
 <div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span> <span class="c1"># needed to compute the standard deviation</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span> <span class="c1"># needed to compute the standard deviation</span>
 
 <span class="k">def</span> <span class="nf">ave</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
@@ -15197,7 +15158,7 @@ The labels on the x axis are expressed with 2 significant digits.</p>
 <div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">exp</span><span class="p">,</span> <span class="n">log</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span><span class="p">,</span> <span class="n">log</span>
 
 <span class="k">def</span> <span class="nf">histo</span><span class="p">(</span><span class="n">list_x</span><span class="p">,</span> <span class="n">list_y</span><span class="p">,</span> <span class="n">xmin</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$-\infty$&#39;</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$+\infty$&#39;</span><span class="p">,</span> <span class="n">yerr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="n">Nx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_x</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
@@ -15484,7 +15445,7 @@ This is most easily done for the Google dataset:</p>
 <div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">bisect</span> <span class="k">import</span> <span class="n">insort</span> <span class="c1"># to insert an element in an ordered list</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">bisect</span> <span class="kn">import</span> <span class="n">insort</span> <span class="c1"># to insert an element in an ordered list</span>
 
 <span class="n">list_count_Google</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">list_ave_rating_Google</span> <span class="o">=</span> <span class="p">[]</span>
@@ -16665,7 +16626,7 @@ The function <code>plot_average_by_feature</code> uses the <code>matplotlib</cod
 <div class="prompt input_prompt">In&nbsp;[34]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">isnan</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">isnan</span>
 <span class="k">def</span> <span class="nf">average_by_feature</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">ind1</span><span class="p">,</span> <span class="n">ind2</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Returns a list of triplets of the form (feature, frequency, average), where</span>
@@ -17190,7 +17151,7 @@ Let us look at that more precisely.</p>
 <div class="prompt input_prompt">In&nbsp;[42]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">isnan</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">isnan</span>
 
 <span class="c1"># centres of the intervals of app sizes to be considered</span>
 <span class="n">list_size_Google</span> <span class="o">=</span> <span class="p">[</span><span class="mi">90</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">10</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">)]</span>

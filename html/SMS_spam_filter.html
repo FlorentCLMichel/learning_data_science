@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>6_49_lottery_probabilities</title>
+<title>SMS_spam_filter</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13077,22 +13077,54 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Winning-probabilities-at-the-6/49-lottery-game">Winning probabilities at the 6/49 lottery game<a class="anchor-link" href="#Winning-probabilities-at-the-6/49-lottery-game">&#182;</a></h1><p>Lotto 6/49, launched on June 12, 1982, was the first Canadian Lottery game to allow players to choose their own numbers. 
-Winning numbers are drawn every Wednesday and Saturday by the Interprovincial Lottery Corporation. 
-Each time, 6 numbers are drawn wthout replacement from a set of 49, plus a bonus number. 
-A player wins money if at least two of the first six are among the numbers they chose. 
-To win the hoghest amount, called the ‘jackpot prize’, a player must have the first six correct numbers.</p>
-<p>Although most people start playing the lottery for fun, it can also turn into an addiction or some players, with potentially disastrous consequences. 
-One important factor in the development of such addictions is the communication centred on the large amount of money the jackpot prize represents and on the change of life it can entail. 
-This focus on a technically possible but unlikely outcome can overshadow how small its probability is, or, more prosaically, that a player is unlikely to win anything at all.</p>
-<p>In this short project, I will estimate some winning likelihoods, in the hope that realizing their smallness may help prevent addiction. 
-I shall mostly use basic Python, in an effort to make the code as transparent as possible, and since the relatively small numbers involved do not require a lot of computing power. 
-I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the functions defined here on very large integers.</p>
-<h2 id="Basic-combinatorial-functions">Basic combinatorial functions<a class="anchor-link" href="#Basic-combinatorial-functions">&#182;</a></h2><p>Let us first define two functions:</p>
+<h1 id="SMS-spam-filter-using-a-naive-Bayes-algorithm">SMS spam filter using a naive Bayes algorithm<a class="anchor-link" href="#SMS-spam-filter-using-a-naive-Bayes-algorithm">&#182;</a></h1><p>The aim of this project is to build a simple Short Message Service (SMS) spam filter, <em>i.e.</em>, a function taking a string as input and returning <code>True</code> if the message is a spam, and <code>False</code> if it is not.
+We will use a multinomial Bayes algorithm, which is first trained on a corpu of spam and non-spam messages.</p>
+<h2 id="A-few-words-on-the-algorithm">A few words on the algorithm<a class="anchor-link" href="#A-few-words-on-the-algorithm">&#182;</a></h2><p>Schematically, the algorithm works in the following way. 
+We start from a corpus of many text messages labeled as spam or non-spam. 
+Let $N_s$ be the total number of words in spam messages and $N_{ns}$ the tota number of words in non-spam messages. 
+Let $V$ be the size of the vocabulary, <em>i.e.</em>, the total number of different words in the corpus. 
+Let us choose a positive number $\alpha$, hereafter called the smoothing parameter.
+For each word $w$, we denote by $N_{w|s}$ the number of times $w$ appears in spam messages and by $N_{w|ns}$ the number of times it appears in non-spam messages. 
+We then define the two weights $p_{w|s}$ and $p_{w|ns}$ by: 
+$$p_{w|s} = \frac{N_{w|s} + \alpha}{N_s + \alpha V}$$
+and
+$$p_{w|ns} = \frac{N_{w|ns} + \alpha}{N_{ns} + \alpha V}.$$</p>
+<p>To build some intuition as to what these weights mean, let us consider two particular cases:</p>
 <ul>
-<li><code>factorial</code>, taking a non-negative integer $n$ and returning $n!$, </li>
-<li><code>combination</code>, taking two non-negative integers $n$ and $k$ and returning ${n\choose k}$.</li>
+<li>If $\alpha = 0$, we have $p_{w|s} = \frac{N_{w|s}}{N_s}$: this is he number of times the word $w$ apears in spam messages divided by the total number of words in spams.
+Assuming the corpus we are working with is representative, $p_{w|s}$ should thus be close to the probability for a word randomly chosen in a set of spam messages to be equal to $w$. 
+Similarly, $p_{w|ns}$ should be close to the probability for a word randomly chosen in a set of non-spam messages to be equal to $w$. 
+These are the weights one would use in a standard Bayesian analysys.</li>
+<li>The problem with these weight is that they vanish if $N_{w|s} = 0$ or $N_{w|ns} = 0$, respectively, <em>i.e.</em>, if the word $w$ never appears in spam or in non-spam messages present in the corpus. 
+This is a problem because new messages may contain this word. 
+For instance, if our spam filter were trained with the standard Bayesian weights, any message which contains a word which, in the corpus used for training, is present only in non-spam messages, would be classified as non-spam even if the rest of its content clearly indicates it is a spam.
+The parameter $\alpha$ is introduced to circumvent this limitation. 
+Indeed, if $N_{w|s} = 0$, for instance, we get $p_{w|s} = \frac{\alpha}{N_s + \alpha V}$: a typically small, but non-vanishing number. </li>
+<li>This parameter also prevents the denominator from being small if the corpus contains too few spam or non-spam messages. 
+For instance, if $N_s \ll V$, we get $p_{w|s} = \frac{N_{w|s} + \alpha}{\alpha V}$. 
+The larger denominator can prevent the model from being too sensitive to small variations in $N_{w|s}$.</li>
 </ul>
+<p>Let $m$ be a message (not necessarily in the corpus) made of a succession of $n$ words $w_1$, $w_2$, ..., $w_n$. 
+We define the two weights $p_{m|s}$ and $p_{m|ns}$ by: 
+$$p_{m|s} = \prod_{i=1}^n p_{w_i|s}$$
+and 
+$$p_{m|ns} = \prod_{i=1}^n p_{w_i|ns}.$$
+(Notice that these definitions are compatible with the above ones if $m$ has exactly one word.)
+We then estimate the probability $P_{s|m}$ that $m$ is a spam as 
+$$P_{s|m} \equiv \frac{p_{m|s} P_s}{p_{m|s} P_s + p_{m|ns} (1-P_s)},$$
+where $P_s$ is the probability that any message is a spam, and label it as spam if $P_{s|m} &gt; 0.5$.</p>
+<p>For $\alpha = 0$ and assuming that each word composing $m$ is in the corpus, $P_{s|m}$ would be the probability that $m$ is a spam given by Bayes' theorem starting from a prior $P_s$ and assuming the words are independent of each others. 
+As mentioned above, the parameter $\alpha$ is introduced to account for words missing in spams or non-spams in the corpus. 
+In the following, we will first choose the prior $P_s = 0.5$, minimizing the Shannon entropy. 
+It could be tempting to improve the estimate by choosing a different prior, <em>i.e.</em>, taking the ratio of spam messages in the corpus. 
+However, this would increase the dependence of the outcome in the representativity of the corpus. 
+For this reason, in this project we will first stick to a prior of $0.5$. 
+We will then see whether changing the prior can improve the results.</p>
+<p>The corpus we will use is in the text file <code>SMSSpamCollection</code>, downloaded from <a href="https://archive.ics.uci.edu/ml/datasets/sms+spam+collection">The UCI Machine Learning Repository</a> on 23 February 2020. 
+It was very slightly modified (I added a quotation mark at the end of line 5082) to ease the import as a Pandas dataframe.
+It consists of 425 SMS spam messages collected from the Grumbletext website (which seems to be offline at the time of writing (23/02/2020)), 3,375 SMS messages randomly selected from the 10,000 of the NUS SMS Corpus (also offline at the time of writing), 450 SMS ham messages collected from <a href="https://etheses.bham.ac.uk/id/eprint/253/1/Tagg09PhD.pdf">Caroline Tag's PhD Thesis</a>, and 1324 messages from the <a href="https://www.esp.uem.es/jmgomez/smsspamcorpus/">SMS Spam Corpus v.0.1 Big</a>.</p>
+<h2 id="Data-Exploration">Data Exploration<a class="anchor-link" href="#Data-Exploration">&#182;</a></h2><p>Let us first import the Pandas module, which we will use to read and explore the corpus, and the Re module to work with regular expressions.
+We alsoimport the Pyplot library, which will be used to produce a plot.</p>
 
 </div>
 </div>
@@ -13102,25 +13134,9 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the factorial of n </span>
-<span class="sd">    n: non-negative integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">*=</span> <span class="n">i</span>
-    <span class="k">return</span> <span class="n">res</span>
-
-<span class="k">def</span> <span class="nf">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the number of combinations of k elements among n</span>
-<span class="sd">    n and k: non-negative integers </span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">factorial</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 </pre></div>
 
     </div>
@@ -13131,8 +13147,7 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us also define the function <code>approximate_fraction_num</code> taking a float and returning a fraction close to it. 
-It takes an optional parameter <code>max_num</code>, equal to 10 by default, representing the maximum acceptable value for the numerator.</p>
+<p>We then load the corpus in the <code>corpus</code> dataframe:</p>
 
 </div>
 </div>
@@ -13142,49 +13157,9 @@ It takes an optional parameter <code>max_num</code>, equal to 10 by default, rep
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the greatest common divisor to a and b</span>
-<span class="sd">    a: positive integer</span>
-<span class="sd">    b: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">a_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="n">b_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">a_</span>
-    <span class="n">r_</span> <span class="o">=</span> <span class="n">a_</span> <span class="o">%</span> <span class="n">b_</span>
-    <span class="k">while</span><span class="p">(</span><span class="n">r_</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">a_</span> <span class="o">=</span> <span class="n">b_</span>
-        <span class="n">b_</span> <span class="o">=</span> <span class="n">r_</span>
-        <span class="n">r_</span> <span class="o">=</span> <span class="n">a_</span> <span class="o">%</span> <span class="n">b_</span>
-    <span class="k">return</span> <span class="n">b_</span>
-
-<span class="k">def</span> <span class="nf">approximate_fraction</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">max_den</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the numerator and denominator of a fraction approximating f, with </span>
-<span class="sd">    a maximum denominator max_den</span>
-<span class="sd">    f: float</span>
-<span class="sd">    max_den: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="n">max_den</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_den</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span> 
-        <span class="n">num</span> <span class="o">+=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">))</span><span class="o">*</span><span class="mi">1</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">gcd</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">max_den</span><span class="p">)</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
-    <span class="n">den</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_den</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">den</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">approximate_fraction_num</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">max_num</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the numerator and denominator of a fraction approximating f, with </span>
-<span class="sd">    a maximum numerator max_num</span>
-<span class="sd">    f: float</span>
-<span class="sd">    max_num: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">frac_inv</span> <span class="o">=</span> <span class="n">approximate_fraction</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">f</span><span class="p">,</span> <span class="n">max_den</span> <span class="o">=</span> <span class="n">max_num</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">frac_inv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">frac_inv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># two columns separated by a tab, no header</span>
+<span class="c1"># the first column is the label and the second one the message</span>
+<span class="n">corpus</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../Data/smsspamcollection/SMSSpamCollection&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Label&#39;</span><span class="p">,</span> <span class="s1">&#39;SMS&#39;</span><span class="p">])</span>
 </pre></div>
 
     </div>
@@ -13195,10 +13170,7 @@ It takes an optional parameter <code>max_num</code>, equal to 10 by default, rep
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Some-winning-probabilities">Some winning probabilities<a class="anchor-link" href="#Some-winning-probabilities">&#182;</a></h2><h3 id="Winning-the-jackpot-prize-in-one-try">Winning the jackpot prize in one try<a class="anchor-link" href="#Winning-the-jackpot-prize-in-one-try">&#182;</a></h3><p>Let $n$ be the number of elements in the set and $k$ be the number of elements drawn (in the case of the 6/49 game, they are respectively 49 and 6). 
-The probability $P_1(J)$ of winning the jackpot prize by playing once (<em>i.e.</em>, choosing a set of six numbers) is: 
-$$ P_1(J) = {n \choose k}^{-1} .$$
-Let us compute this number for $n = 49$ and $k = 6$:</p>
+<p>To ease the analysis, we convert the column <code>Label</code> to boolean values, replacing <code>ham</code> (denoting a non-spam message) by <code>False</code> and <code>spam</code> by <code>True</code>:</p>
 
 </div>
 </div>
@@ -13208,32 +13180,10 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
-<span class="n">P_1_J</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-<span class="n">frac</span> <span class="o">=</span> <span class="n">approximate_fraction_num</span><span class="p">(</span><span class="n">P_1_J</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Winning probability: </span><span class="si">{:.1e}</span><span class="s1">, i.e., </span><span class="si">{:.7f}</span><span class="s1">, or </span><span class="si">{}</span><span class="s1"> over </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P_1_J</span><span class="p">,</span> <span class="n">P_1_J</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frac</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">corpus</span><span class="p">[</span><span class="s1">&#39;Label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">corpus</span><span class="p">[</span><span class="s1">&#39;Label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">&#39;ham&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;spam&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">})</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Winning probability: 7.2e-08, i.e., 0.0000072, or 1 over 13983816
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -13241,9 +13191,7 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The probability of winning the jackpot prize is smaller than one over ten millions, which is rather small.</p>
-<h3 id="Would-I-have-won?">Would I have won?<a class="anchor-link" href="#Would-I-have-won?">&#182;</a></h3><p>To get more intuition about how small this number is, we want to write a function taking a six-numbers input and telling if, assuming this set was played many times, it would have won the jackpot prize at least once. 
-To this end, we first load the dataset <code>649.csv</code>, containing results from previous draws.</p>
+<p>Let us print a few informations about the dataframe:</p>
 
 </div>
 </div>
@@ -13253,11 +13201,145 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../Data/649.csv&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">summary</span> <span class="o">=</span> <span class="n">corpus</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+<span class="n">display</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+<span class="n">nrows</span> <span class="o">=</span> <span class="n">summary</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">,</span><span class="s1">&#39;Label&#39;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">summary</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;freq&#39;</span><span class="p">,</span><span class="s1">&#39;Label&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">nrows</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Label</th>
+      <th>SMS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>5574</td>
+      <td>5574</td>
+    </tr>
+    <tr>
+      <th>unique</th>
+      <td>2</td>
+      <td>5171</td>
+    </tr>
+    <tr>
+      <th>top</th>
+      <td>False</td>
+      <td>Sorry, I'll call later</td>
+    </tr>
+    <tr>
+      <th>freq</th>
+      <td>4827</td>
+      <td>30</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0.8659849300322928
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It has 5574 rows, as expected. 
+Most of them (4825, <em>i.e.</em>, approximately 87%) correpond to non-spam messages.</p>
+<h2 id="Training-and-test-sets">Training and test sets<a class="anchor-link" href="#Training-and-test-sets">&#182;</a></h2><p>We now separate the corpus into a training and a test sets. 
+The later will contain approximately 20% of all messages.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># fraction of messages used for the test</span>
+<span class="n">frac_test</span> <span class="o">=</span> <span class="mf">0.2</span>
+
+<span class="c1"># randomizing the sample, using a  particular random state to make the results </span>
+<span class="c1"># reproducible (this should not be done in real-world applications!)</span>
+<span class="n">corpus_rand</span> <span class="o">=</span> <span class="n">corpus</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># separate it into the training and test dataframes</span>
+<span class="n">n_messages_training</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="mf">1.</span><span class="o">-</span><span class="n">frac_test</span><span class="p">)</span><span class="o">*</span><span class="n">nrows</span><span class="p">)</span>
+<span class="n">corpus_training</span> <span class="o">=</span> <span class="n">corpus_rand</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="n">n_messages_training</span><span class="p">]</span>
+<span class="n">corpus_test</span> <span class="o">=</span> <span class="n">corpus_rand</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">n_messages_training</span><span class="p">:]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To see whether they are representative, let us compute the percentage of spam messages in each of these dataframes:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">percentage_spam</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">phrase</span> <span class="o">=</span> <span class="s1">&#39;Percentage of spam messages in the </span><span class="si">{}</span><span class="s1"> dataframe: </span><span class="si">{}</span><span class="s1">%&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">phrase</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;training&#39;</span><span class="p">,</span> <span class="n">percentage_spam</span><span class="p">(</span><span class="n">corpus_training</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">phrase</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">percentage_spam</span><span class="p">(</span><span class="n">corpus_test</span><span class="p">)))</span>
 </pre></div>
 
     </div>
@@ -13274,243 +13356,12 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>(3665, 11)
+<pre>Percentage of spam messages in the training dataframe: 13.47835837631756%
+Percentage of spam messages in the test dataframe: 13.094170403587444%
 </pre>
 </div>
 </div>
 
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PRODUCT</th>
-      <th>DRAW NUMBER</th>
-      <th>SEQUENCE NUMBER</th>
-      <th>DRAW DATE</th>
-      <th>NUMBER DRAWN 1</th>
-      <th>NUMBER DRAWN 2</th>
-      <th>NUMBER DRAWN 3</th>
-      <th>NUMBER DRAWN 4</th>
-      <th>NUMBER DRAWN 5</th>
-      <th>NUMBER DRAWN 6</th>
-      <th>BONUS NUMBER</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>649</td>
-      <td>1</td>
-      <td>0</td>
-      <td>6/12/1982</td>
-      <td>3</td>
-      <td>11</td>
-      <td>12</td>
-      <td>14</td>
-      <td>41</td>
-      <td>43</td>
-      <td>13</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>649</td>
-      <td>2</td>
-      <td>0</td>
-      <td>6/19/1982</td>
-      <td>8</td>
-      <td>33</td>
-      <td>36</td>
-      <td>37</td>
-      <td>39</td>
-      <td>41</td>
-      <td>9</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>649</td>
-      <td>3</td>
-      <td>0</td>
-      <td>6/26/1982</td>
-      <td>1</td>
-      <td>6</td>
-      <td>23</td>
-      <td>24</td>
-      <td>27</td>
-      <td>39</td>
-      <td>34</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>649</td>
-      <td>4</td>
-      <td>0</td>
-      <td>7/3/1982</td>
-      <td>3</td>
-      <td>9</td>
-      <td>10</td>
-      <td>13</td>
-      <td>20</td>
-      <td>43</td>
-      <td>34</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>649</td>
-      <td>5</td>
-      <td>0</td>
-      <td>7/10/1982</td>
-      <td>5</td>
-      <td>14</td>
-      <td>21</td>
-      <td>31</td>
-      <td>34</td>
-      <td>47</td>
-      <td>45</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PRODUCT</th>
-      <th>DRAW NUMBER</th>
-      <th>SEQUENCE NUMBER</th>
-      <th>DRAW DATE</th>
-      <th>NUMBER DRAWN 1</th>
-      <th>NUMBER DRAWN 2</th>
-      <th>NUMBER DRAWN 3</th>
-      <th>NUMBER DRAWN 4</th>
-      <th>NUMBER DRAWN 5</th>
-      <th>NUMBER DRAWN 6</th>
-      <th>BONUS NUMBER</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>3660</th>
-      <td>649</td>
-      <td>3587</td>
-      <td>0</td>
-      <td>6/6/2018</td>
-      <td>10</td>
-      <td>15</td>
-      <td>23</td>
-      <td>38</td>
-      <td>40</td>
-      <td>41</td>
-      <td>35</td>
-    </tr>
-    <tr>
-      <th>3661</th>
-      <td>649</td>
-      <td>3588</td>
-      <td>0</td>
-      <td>6/9/2018</td>
-      <td>19</td>
-      <td>25</td>
-      <td>31</td>
-      <td>36</td>
-      <td>46</td>
-      <td>47</td>
-      <td>26</td>
-    </tr>
-    <tr>
-      <th>3662</th>
-      <td>649</td>
-      <td>3589</td>
-      <td>0</td>
-      <td>6/13/2018</td>
-      <td>6</td>
-      <td>22</td>
-      <td>24</td>
-      <td>31</td>
-      <td>32</td>
-      <td>34</td>
-      <td>16</td>
-    </tr>
-    <tr>
-      <th>3663</th>
-      <td>649</td>
-      <td>3590</td>
-      <td>0</td>
-      <td>6/16/2018</td>
-      <td>2</td>
-      <td>15</td>
-      <td>21</td>
-      <td>31</td>
-      <td>38</td>
-      <td>49</td>
-      <td>8</td>
-    </tr>
-    <tr>
-      <th>3664</th>
-      <td>649</td>
-      <td>3591</td>
-      <td>0</td>
-      <td>6/20/2018</td>
-      <td>14</td>
-      <td>24</td>
-      <td>31</td>
-      <td>35</td>
-      <td>37</td>
-      <td>48</td>
-      <td>17</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
 </div>
 </div>
 
@@ -13518,53 +13369,10 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This dataset contains results from all drawings that occurred before 21st June 2018. 
-Let us use it to build the list <code>drawings_6</code> of all drawings, excluding the bonus number. 
-We cast them as sets since the order is not important.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;drawing_6&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;NUMBER DRAWN &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">7</span><span class="p">)]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-<span class="n">drawing_6</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;drawing_6&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">set</span><span class="p">))</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We now define the function <code>has_aready_won</code> taking a six-numbers list or set and returning <code>True</code> if it has been drawn at least once and <code>False</code> otherwise (technically, it returns whether it has been drawn before June 21st 2018; but this only make a difference for a small number of sets):</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">has_already_won</span><span class="p">(</span><span class="n">numbers</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span> <span class="ow">in</span> <span class="n">drawing_6</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us test it on two examples: one which was drawn and one which was not.</p>
+<p>Both dataframes have between 13.0% and 13.5% of spam messages, which is close to the percentage of spams in the full corpus. 
+They thus seem to be representative.</p>
+<h2 id="Building-the-corpus-of-words">Building the corpus of words<a class="anchor-link" href="#Building-the-corpus-of-words">&#182;</a></h2><p>We now want to extract the words from messages in the traning set. 
+To this end, we first replace all non-alphanumerical characters by spaces and convert all letters to lowercase:</p>
 
 </div>
 </div>
@@ -13574,8 +13382,332 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">has_already_won</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">41</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">has_already_won</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">41</span><span class="p">]))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">corpus_training</span> <span class="o">=</span> <span class="n">corpus_training</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1"># to prevent an irrelevant warning</span>
+<span class="n">corpus_training</span><span class="p">[</span><span class="s1">&#39;SMS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">corpus_training</span><span class="p">[</span><span class="s1">&#39;SMS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;\W&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
+<span class="n">corpus_training</span> <span class="o">=</span> <span class="n">corpus_training</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1"># to prevent a false warning</span>
+<span class="n">corpus_training</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="s1">&#39;SMS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">corpus_training</span><span class="p">[</span><span class="s1">&#39;SMS&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="n">corpus_training</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Label</th>
+      <th>SMS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1447</th>
+      <td>False</td>
+      <td>looks like u wil b getting a headstart im leav...</td>
+    </tr>
+    <tr>
+      <th>2032</th>
+      <td>False</td>
+      <td>i noe la    u wana pei bf oso rite    k lor  o...</td>
+    </tr>
+    <tr>
+      <th>4432</th>
+      <td>False</td>
+      <td>2mro i am not coming to gym machan  goodnight</td>
+    </tr>
+    <tr>
+      <th>4888</th>
+      <td>True</td>
+      <td>todays vodafone numbers ending with 4882 are s...</td>
+    </tr>
+    <tr>
+      <th>5276</th>
+      <td>False</td>
+      <td>hi  hope ur day   good  back from walk  table ...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4255</th>
+      <td>False</td>
+      <td>how about clothes  jewelry  and trips</td>
+    </tr>
+    <tr>
+      <th>1982</th>
+      <td>False</td>
+      <td>sorry  i ll call later in meeting any thing re...</td>
+    </tr>
+    <tr>
+      <th>4755</th>
+      <td>False</td>
+      <td>ok lor    or u wan me go look 4 u</td>
+    </tr>
+    <tr>
+      <th>4020</th>
+      <td>True</td>
+      <td>u ve been selected to stay in 1 of 250 top bri...</td>
+    </tr>
+    <tr>
+      <th>371</th>
+      <td>False</td>
+      <td>hello my boytoy     geeee i miss you already a...</td>
+    </tr>
+  </tbody>
+</table>
+<p>4459 rows × 2 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We now define the set <code>vocabulary</code> containing all the words present in training messages:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">vocabulary</span> <span class="o">=</span> <span class="p">{</span><span class="n">w</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">corpus_training</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">corpus_training</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()}</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The two dictionaries <code>count_words_spam</code> and <code>count_words_non_spam</code> count the number of occurrences of each word in the spam and non-spam messages, respectively:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">count_words_spam</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="n">count_words_non_spam</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">corpus_training</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="n">corpus_training</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]:</span> <span class="c1"># if the message is a spam</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">corpus_training</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_spam</span><span class="p">:</span>
+                <span class="n">count_words_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">count_words_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">corpus_training</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_non_spam</span><span class="p">:</span>
+                <span class="n">count_words_non_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">count_words_non_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We now compute the total number <code>Ns</code> of words in spams, <code>Nns</code> of words in non-spam messages, and the size <code>V</code> of the vocabulary:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Ns</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">count_words_spam</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="n">Nns</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">count_words_non_spam</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="n">V</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The prior probability of a message being a spam, <code>Ps</code>, is set to 0.5, and the smoothing parameter <code>alpha</code> to 1.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">Ps</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Computing-$p_{w|s}$-and-$p_{w|ns}$">Computing $p_{w|s}$ and $p_{w|ns}$<a class="anchor-link" href="#Computing-$p_{w|s}$-and-$p_{w|ns}$">&#182;</a></h2><p>To make the spam filter more efficient, we pre-compute the conditional probabilities for each word in the vocabulary to appear given that a message is or is not a spam. 
+The results are stored in the dictionaries <code>p_w_s</code> and <code>p_w_ns</code>. 
+We also define the weight <code>p_not_in_V_s</code> and <code>p_not_in_V_ns</code> for a word not in the vocabulary.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">p_w_s</span> <span class="o">=</span> <span class="p">{</span><span class="n">w</span><span class="p">:</span> <span class="p">(</span><span class="n">count_words_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Ns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_spam</span><span class="p">}</span>
+<span class="n">p_w_ns</span> <span class="o">=</span> <span class="p">{</span><span class="n">w</span><span class="p">:</span> <span class="p">(</span><span class="n">count_words_non_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Nns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_non_spam</span><span class="p">}</span>
+
+<span class="n">p_not_in_V_s</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">Ns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span>
+<span class="n">p_not_in_V_ns</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">Nns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="The-classify-function">The <code>classify</code> function<a class="anchor-link" href="#The-classify-function">&#182;</a></h2><p>We define the <code>classify</code> function taking a message as a string and returning <code>True</code> if it seems to be a spam and <code>False</code> otherwise. 
+If the argument <code>probability</code> is set to <code>True</code>, it returns the probability that the message is a spam instead.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">classify</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+             <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">minval</span> <span class="o">=</span> <span class="mf">10.</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">)):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Function to estimate if the message seems to be a spam.</span>
+<span class="sd">    If probability is False, it returns True if the message seems to be a spam </span>
+<span class="sd">    and False otherwise. </span>
+<span class="sd">    If probability is True, it returns the estimated probability for the </span>
+<span class="sd">    message to be a spam.</span>
+<span class="sd">    If weights fall below minval, we increase them to avoid reaching 0.</span>
+<span class="sd">    The parameters thresholdis the probability above which we consider the </span>
+<span class="sd">    message is a spam.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># convert the message to lowercase and replace non-alphanumerical characters by spaces</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;\W&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    
+    <span class="c1"># split the message into words</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    
+    <span class="c1"># if there is no word, stop the analysis</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">words</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;I can</span><span class="se">\&#39;</span><span class="s1">t find any word in this message&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    
+    <span class="c1"># compute p_{m|s} and p_{m|ns}</span>
+    <span class="n">p_m_s</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">p_m_ns</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">p_w_s</span><span class="p">:</span> 
+            <span class="n">p_m_s</span> <span class="o">*=</span> <span class="n">p_w_s</span><span class="p">[</span><span class="n">w</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">p_m_s</span> <span class="o">*=</span> <span class="n">p_not_in_V_s</span>
+        <span class="k">if</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">p_w_ns</span><span class="p">:</span> 
+            <span class="n">p_m_ns</span> <span class="o">*=</span> <span class="n">p_w_ns</span><span class="p">[</span><span class="n">w</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">p_m_ns</span> <span class="o">*=</span> <span class="n">p_not_in_V_ns</span>
+        <span class="k">while</span> <span class="p">(</span><span class="n">p_m_s</span> <span class="o">&lt;</span> <span class="n">minval</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">p_m_ns</span> <span class="o">&lt;</span> <span class="n">minval</span><span class="p">):</span> 
+            <span class="n">p_m_s</span> <span class="o">*=</span> <span class="mi">2</span>
+            <span class="n">p_m_ns</span> <span class="o">*=</span> <span class="mi">2</span>
+            
+    <span class="c1"># compute P_{s|m}</span>
+    <span class="n">P_s_m</span> <span class="o">=</span> <span class="n">p_m_s</span> <span class="o">*</span> <span class="n">Ps</span> <span class="o">/</span> <span class="p">(</span><span class="n">p_m_s</span> <span class="o">*</span> <span class="n">Ps</span> <span class="o">+</span> <span class="n">p_m_ns</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">Ps</span><span class="p">))</span>
+    
+    <span class="k">if</span> <span class="n">probability</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">P_s_m</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">P_s_m</span> <span class="o">&gt;</span> <span class="n">threshold</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let us test it on two messages: one which is probably a spam and one which is probably not.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">probably_spam</span> <span class="o">=</span> <span class="s1">&#39;WINNER!! This is the secret code to unlock the money: C3421.&#39;</span>
+<span class="n">probably_non_spam</span> <span class="o">=</span> <span class="s2">&quot;Sounds good, Tom, then see u there&quot;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">classify</span><span class="p">(</span><span class="n">probably_spam</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classify</span><span class="p">(</span><span class="n">probably_non_spam</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -13605,28 +13737,31 @@ False
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us now do a small experiment: we select a large number (say, 10000) of (not necessarily different) sets of six numbers at random, and count how much of them have been drawn at least once:</p>
+<h2 id="Testing-the-classify-function">Testing the <code>classify</code> function<a class="anchor-link" href="#Testing-the-classify-function">&#182;</a></h2><p>Let us now test this function on the test set. 
+We define the accuracy as the fraction of messages correctly labeled. 
+We store the indices of the mislabeled messages in the list <code>mislabeled</code>.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">choice</span><span class="p">,</span> <span class="n">seed</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">mislabeled</span> <span class="o">=</span> <span class="p">[]</span>
 
-<span class="n">n_sets</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">corpus_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">total</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">classify</span><span class="p">(</span><span class="n">corpus_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="n">corpus_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">correct</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">mislabeled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
-<span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix the seed to get the same result each time the code is run</span>
-<span class="n">n_has_won</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sets</span><span class="p">):</span> 
-    <span class="n">test_set</span> <span class="o">=</span> <span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">has_already_won</span><span class="p">(</span><span class="n">test_set</span><span class="p">):</span> 
-        <span class="n">n_has_won</span> <span class="o">+=</span> <span class="mi">1</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Among the </span><span class="si">{}</span><span class="s1"> sets, </span><span class="si">{}</span><span class="s1"> have been drawn at least once&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_has_won</span><span class="p">))</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">correct</span> <span class="o">/</span> <span class="n">total</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The accuracy is: </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -13643,7 +13778,7 @@ False
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Among the 10000 sets, 2 have been drawn at least once
+<pre>The accuracy is: 0.963
 </pre>
 </div>
 </div>
@@ -13655,81 +13790,34 @@ False
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Only 2 sets among the 1000 have been drawn at least once. 
-The probability for a given set to be drawn one specific day is thus quite small!</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Winning-the-jackpot-price-with-several-tickets">Winning the jackpot price with several tickets<a class="anchor-link" href="#Winning-the-jackpot-price-with-several-tickets">&#182;</a></h3><p>Assuming we play $l$ different valid tickets, where $l$ is a positive integer, the probability $P_l(J)$ to win the jackpot prize is:
-$$P_l(J) = l \times P_1(J).$$
-From the above results, having a probability of just 1 in 10 of winning would require playing more than one million sets of numbers. 
-At the time of writing (21 April 2020), the cost of playing six numbers is CAD3. 
-Having a probability to win the jackpot prize of more than one half requires buying more than 5,000,000 of them, for a total cost of CAD15,000,000. 
-Since the jackpot prize is only CAD6,000,000 at the moment, this would incur a large loss of money even if winning.</p>
-<h3 id="Having-a-few-matching-numbers">Having a few matching numbers<a class="anchor-link" href="#Having-a-few-matching-numbers">&#182;</a></h3><p>We now focus on smaller prizes. 
-The function <code>proba_prize</code> below takes 4 inputs:</p>
-<ul>
-<li>n (positive integer): the number of elements in the set, </li>
-<li>k (positive integer): the number of elements to be chosen by the player, </li>
-<li>l (positive integer): the number of elements that need to match for a given prize, excluding the bonus number, </li>
-<li>b (boolean): whether the bonus number needs to match</li>
-</ul>
-<p>It returns the probability of winning the price when playing once. 
-All inputs defaut to the jackpot prize setup.</p>
+<p>Our spam filter reaches an accuracy of 0.96, which is fairly good.</p>
+<h2 id="Changing-the-prior">Changing the prior<a class="anchor-link" href="#Changing-the-prior">&#182;</a></h2><p>Let us now see what happens if taking as prior the fraction of spams in the training set.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">proba_prize</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">49</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">proba_l_numbers</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="c1"># compute the probability that at least l numbers match</span>
-    <span class="k">for</span> <span class="n">l_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="c1"># probability that exactly l_ elements match</span>
-        <span class="c1"># for each choice of l_ elements among the k, the number of draws where </span>
-        <span class="c1"># they match while the k-l_ others don&#39;t match is equal to the number of</span>
-        <span class="c1"># ways of choosing k-l_ elements among n-k</span>
-        <span class="n">proba_l_numbers</span> <span class="o">+=</span> <span class="n">combination</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">l_</span><span class="p">)</span> <span class="o">*</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="o">-</span><span class="n">l_</span><span class="p">)</span> <span class="o">/</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b</span><span class="p">:</span>
-        <span class="c1"># if the bonus number needs to match</span>
-        <span class="k">return</span> <span class="n">proba_l_numbers</span> <span class="o">/</span> <span class="n">n</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">proba_l_numbers</span>
-</pre></div>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">N_s_training</span> <span class="o">=</span> <span class="n">corpus_training</span><span class="p">[</span><span class="s1">&#39;Label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">N_ns_training</span> <span class="o">=</span> <span class="n">corpus_training</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">N_s_training</span>
+<span class="n">Ps</span> <span class="o">=</span> <span class="n">N_s_training</span> <span class="o">/</span> <span class="p">(</span><span class="n">N_s_training</span> <span class="o">+</span> <span class="n">N_ns_training</span><span class="p">)</span>
 
-    </div>
-</div>
-</div>
+<span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">mislabeled</span> <span class="o">=</span> <span class="p">[]</span>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us apply this function to $l \in \lbrace 2, 3, 4, 5, 6 \rbrace$:</p>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">corpus_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">total</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">classify</span><span class="p">(</span><span class="n">corpus_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="n">corpus_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">correct</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">mislabeled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
-    <span class="n">proba</span> <span class="o">=</span> <span class="n">proba_prize</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
-    <span class="n">frac</span> <span class="o">=</span> <span class="n">approximate_fraction_num</span><span class="p">(</span><span class="n">proba</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of having at least </span><span class="si">{}</span><span class="s1"> matching numbers: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">proba</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of having at least </span><span class="si">{}</span><span class="s1"> matching numbers: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately </span><span class="si">{}</span><span class="s1"> in </span><span class="si">{}</span><span class="s1">, or one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">proba</span><span class="p">,</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frac</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
+<span class="n">accuracy</span> <span class="o">=</span> <span class="n">correct</span> <span class="o">/</span> <span class="n">total</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The accuracy is: </span><span class="si">{:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accuracy</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -13746,11 +13834,7 @@ All inputs defaut to the jackpot prize setup.</p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Probability of having at least 2 matching numbers: 1.51e-01, i.e., approximately 5 in 33, or one in 6
-Probability of having at least 3 matching numbers: 1.86e-02, i.e., approximately 10 in 537, or one in 53
-Probability of having at least 4 matching numbers: 9.87e-04, i.e., approximately one in 1013
-Probability of having at least 5 matching numbers: 1.85e-05, i.e., approximately 5 in 269958, or one in 53991
-Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately one in 13983816
+<pre>The accuracy is: 0.984
 </pre>
 </div>
 </div>
@@ -13762,18 +13846,303 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us also compute the probability of winning the second prize, i.e., having 5 matching numbers plus the bonus number:</p>
+<p>The accuracy becomes larger than 0.98, which seems to indicate that it is a more suitable choice of prior. 
+Let us see which messages are still mislabeled:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">proba</span> <span class="o">=</span> <span class="n">proba_prize</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of winning the second prize: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">proba</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">corpus_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">mislabeled</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[17]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Label</th>
+      <th>SMS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3460</th>
+      <td>True</td>
+      <td>Not heard from U4 a while. Call me now am here...</td>
+    </tr>
+    <tr>
+      <th>3890</th>
+      <td>False</td>
+      <td>Unlimited texts. Limited minutes.</td>
+    </tr>
+    <tr>
+      <th>991</th>
+      <td>False</td>
+      <td>26th OF JULY</td>
+    </tr>
+    <tr>
+      <th>989</th>
+      <td>False</td>
+      <td>Yun ah.the ubi one say if ü wan call by tomorr...</td>
+    </tr>
+    <tr>
+      <th>4488</th>
+      <td>False</td>
+      <td>Miss call miss call khelate kintu opponenter m...</td>
+    </tr>
+    <tr>
+      <th>326</th>
+      <td>False</td>
+      <td>No calls..messages..missed calls</td>
+    </tr>
+    <tr>
+      <th>3149</th>
+      <td>False</td>
+      <td>CHEERS U TEX MECAUSE U WEREBORED! YEAH OKDEN H...</td>
+    </tr>
+    <tr>
+      <th>2419</th>
+      <td>False</td>
+      <td>Madam,regret disturbance.might receive a refer...</td>
+    </tr>
+    <tr>
+      <th>3864</th>
+      <td>True</td>
+      <td>Oh my god! I've found your number again! I'm s...</td>
+    </tr>
+    <tr>
+      <th>4676</th>
+      <td>True</td>
+      <td>Hi babe its Chloe, how r u? I was smashed on s...</td>
+    </tr>
+    <tr>
+      <th>3094</th>
+      <td>False</td>
+      <td>staff.science.nus.edu.sg/~phyhcmk/teaching/pc1323</td>
+    </tr>
+    <tr>
+      <th>5336</th>
+      <td>False</td>
+      <td>Garbage bags, eggs, jam, bread, hannaford whea...</td>
+    </tr>
+    <tr>
+      <th>886</th>
+      <td>False</td>
+      <td>Gibbs unsold.mike hussey</td>
+    </tr>
+    <tr>
+      <th>5455</th>
+      <td>False</td>
+      <td>Except theres a chick with huge boobs.</td>
+    </tr>
+    <tr>
+      <th>1638</th>
+      <td>True</td>
+      <td>0A$NETWORKS allow companies to bill for SMS, s...</td>
+    </tr>
+    <tr>
+      <th>2171</th>
+      <td>False</td>
+      <td>CAN I PLEASE COME UP NOW IMIN TOWN.DONTMATTER ...</td>
+    </tr>
+    <tr>
+      <th>869</th>
+      <td>True</td>
+      <td>Hello. We need some posh birds and chaps to us...</td>
+    </tr>
+    <tr>
+      <th>3270</th>
+      <td>False</td>
+      <td>Raviyog Peripherals bhayandar east</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Most of them are genuine messages mislabeled as spams.</p>
+<h2 id="Taking-new-messages-into-account">Taking new messages into account<a class="anchor-link" href="#Taking-new-messages-into-account">&#182;</a></h2><p>One of the features of machine learning compared with classical statistical anaysis is the possibility to continually learn by including new information. 
+To take advantage of this, we define the function <code>update</code> taking a message as a string, a label <code>True</code> or <code>False</code>, and updating the parameters.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">is_spam</span><span class="p">,</span> <span class="n">change_prior</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function updates the spam filter given a new message and a label </span>
+<span class="sd">    is_spam equal to true if it is a spam and False otherwise. </span>
+<span class="sd">    If change_prior is true, the prior Ps is updated</span>
+<span class="sd">    </span>
+<span class="sd">    message: string</span>
+<span class="sd">    is_spam: bool</span>
+<span class="sd">    change_prior: bool (optional)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># define variables as global to be able to modify them </span>
+    <span class="k">global</span> <span class="n">N_s_training</span><span class="p">,</span> <span class="n">N_ns_training</span><span class="p">,</span> <span class="n">Ps</span><span class="p">,</span> <span class="n">p_w_s</span><span class="p">,</span> <span class="n">p_w_ns</span><span class="p">,</span> <span class="n">p_not_in_V_s</span><span class="p">,</span> \
+           <span class="n">p_not_in_V_ns</span><span class="p">,</span> <span class="n">count_words_spam</span><span class="p">,</span> <span class="n">count_words_non_spam</span><span class="p">,</span> <span class="n">Ns</span><span class="p">,</span> <span class="n">Nns</span><span class="p">,</span> \
+           <span class="n">vocabulary</span><span class="p">,</span> <span class="n">V</span>
+    
+    <span class="c1"># add new words to the vocabulary</span>
+    
+    <span class="k">if</span> <span class="n">is_spam</span><span class="p">:</span>
+        <span class="n">N_s_training</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;\W&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+            <span class="n">vocabulary</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_spam</span><span class="p">:</span>
+                <span class="n">count_words_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">count_words_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">)</span>
+        <span class="n">Ns</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">count_words_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_spam</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>    
+        <span class="n">N_ns_training</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;\W&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+            <span class="n">vocabulary</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_non_spam</span><span class="p">:</span>
+                <span class="n">count_words_non_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">count_words_non_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">V</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">)</span>
+        <span class="n">Nns</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">count_words_non_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_non_spam</span><span class="p">)</span>
+        
+    <span class="k">if</span> <span class="n">change_prior</span><span class="p">:</span>
+        <span class="n">Ps</span> <span class="o">=</span> <span class="n">N_s_training</span> <span class="o">/</span> <span class="p">(</span><span class="n">N_s_training</span> <span class="o">+</span> <span class="n">N_ns_training</span><span class="p">)</span>
+    
+    <span class="n">p_w_s</span> <span class="o">=</span> <span class="p">{</span><span class="n">w</span><span class="p">:</span> <span class="p">(</span><span class="n">count_words_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Ns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_spam</span><span class="p">}</span>
+    <span class="n">p_w_ns</span> <span class="o">=</span> <span class="p">{</span><span class="n">w</span><span class="p">:</span> <span class="p">(</span><span class="n">count_words_non_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Nns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_non_spam</span><span class="p">}</span>
+
+    <span class="n">p_not_in_V_s</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">Ns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">p_not_in_V_ns</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">Nns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Changing-the-value-of-$\alpha$">Changing the value of $\alpha$<a class="anchor-link" href="#Changing-the-value-of-$\alpha$">&#182;</a></h2><p>Let us now see how changing $\alpha$ affects the results. 
+To this end, we define the function <code>update_alpha_and_train</code> wich changes the value of $\alpha$, re-trains the model, and prints its acuracy.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">update_alpha_and_train</span><span class="p">(</span><span class="n">new_alpha</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    update the value fof alpha, re-train the model, and return its accuracy</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">global</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">p_w_s</span><span class="p">,</span> <span class="n">p_w_ns</span><span class="p">,</span> <span class="n">p_not_in_V_s</span><span class="p">,</span> <span class="n">p_not_in_V_ns</span>
+    
+    <span class="c1"># update alpha</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">new_alpha</span>
+
+    <span class="c1"># re-compute the weights</span>
+    <span class="n">p_w_s</span> <span class="o">=</span> <span class="p">{</span><span class="n">w</span><span class="p">:</span> <span class="p">(</span><span class="n">count_words_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Ns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_spam</span><span class="p">}</span>
+    <span class="n">p_w_ns</span> <span class="o">=</span> <span class="p">{</span><span class="n">w</span><span class="p">:</span> <span class="p">(</span><span class="n">count_words_non_spam</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="o">+</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">Nns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">count_words_non_spam</span><span class="p">}</span>
+
+    <span class="n">p_not_in_V_s</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">Ns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">p_not_in_V_ns</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">Nns</span> <span class="o">+</span> <span class="n">alpha</span><span class="o">*</span><span class="n">V</span><span class="p">)</span>
+
+    <span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">mislabeled</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">corpus_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">total</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">classify</span><span class="p">(</span><span class="n">corpus_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="n">corpus_test</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">correct</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">mislabeled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">correct</span> <span class="o">/</span> <span class="n">total</span>
+    <span class="k">return</span> <span class="n">accuracy</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We try with $\alpha$ ranging from 0.0001 to 10:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">alpha_min</span> <span class="o">=</span> <span class="mf">0.0001</span>
+<span class="n">alpha_max</span> <span class="o">=</span> <span class="mf">10.</span>
+<span class="n">n_values</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="n">alpha_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">alpha_min</span><span class="o">*</span><span class="p">(</span><span class="n">alpha_max</span><span class="o">/</span><span class="n">alpha_min</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">i</span><span class="o">/</span><span class="p">(</span><span class="n">n_values</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_values</span><span class="p">)]</span>
+<span class="n">acc_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">update_alpha_and_train</span><span class="p">,</span> <span class="n">alpha_values</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">alpha_values</span><span class="p">,</span> <span class="n">acc_values</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">alpha_min</span><span class="p">,</span> <span class="n">alpha_max</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\alpha$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;accuracy&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13789,112 +14158,12 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
     <div class="prompt"></div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Probability of winning the second prize: 3.78e-07, i.e., approximately one in 2645586
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>All these probabilities are rather small. 
-Even the probability of having just two matching numbers, which, under the current rules (as of 12/02/2020) is the lowest possible prize and gives only a free ticket, is just one in six.</p>
-<h2 id="Average-win-(or-loss)">Average win (or loss)<a class="anchor-link" href="#Average-win-(or-loss)">&#182;</a></h2><p>Finally, let us compute the average gain for each play, using data from <a href="https://lotto.bclc.com/lotto-649-and-extra/prizes-and-odds.html">the bclc website</a> (valid on 21 April 2020). 
-We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number of players, the average number of players winning the prize is $N P$. The average gain for each player is thue $(P p) / (N P) = p / N$.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
-
-<span class="c1"># cost of playing in CAD</span>
-<span class="n">cost_line</span> <span class="o">=</span> <span class="mi">3</span>
-
-<span class="c1"># prize amount in CAD</span>
-<span class="n">prop_in_play</span> <span class="o">=</span> <span class="mf">0.47</span> <span class="c1"># proportion of sales put in play</span>
-
-<span class="c1"># estimate for the number of players</span>
-<span class="c1"># The result actually does no depend on this number as, in each term in the </span>
-<span class="c1"># sum, it appears both on the numerator and denominator. However, we keep </span>
-<span class="c1"># it for clarity. </span>
-<span class="n">number_players</span> <span class="o">=</span> <span class="mi">3000000</span> 
-<span class="n">pools_fund</span> <span class="o">=</span> <span class="n">number_players</span> <span class="o">*</span> <span class="n">cost_line</span> <span class="o">*</span> <span class="n">prop_in_play</span>
-<span class="n">prize_amount</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.795</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.06</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.095</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">]</span>
-
-<span class="n">average_gain</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">prize_amount</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">number_players</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prize_amount</span><span class="p">))])</span> <span class="o">-</span> <span class="n">cost_line</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Average gain: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">average_gain</span><span class="p">))</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
 
 
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Average gain: -1.59
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>On average, a player will thus lose more than half the price of a ticket. 
-Let us see how much a regular player may lose in 10 years.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># average gain * (two days a week) * (average number of days in a year)</span>
-<span class="c1"># * (number of years)</span>
-<span class="n">average_gain</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mf">365.2475</span> <span class="o">*</span> <span class="mi">10</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[13]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>-1659.2609529000001</pre>
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
 </div>
 
 </div>
@@ -13906,7 +14175,13 @@ Let us see how much a regular player may lose in 10 years.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>A player playing twice a week for 10 years will, on average, lose more than CAD 1650.</p>
+<p>The resulting accuracy seems to be virtually independent of $\alpha$, although choosing $\alpha = 0.01$ seems to give the best results, with an accuracy of $0.99$.</p>
+<h2 id="Conclusion">Conclusion<a class="anchor-link" href="#Conclusion">&#182;</a></h2><p>In this project, we built a classifier to determine whether an SMS is a spam or not, using a naive Bayes algorithm. 
+We found that best results are achived when whoosing as prior the fraction of spam messages in the corpus and a value of the smoothing parameter close to 0.01. 
+The resulting accuracy was 99%.</p>
+<p>This indcates that, if this model were to be used in real-world applications, a good prior to start with would be the fraction of SMS received by a user that are spam. 
+The optimum value of $\alpha$ will likely depend on the size ot the corpus (we expect it to decrease as the size of the corpus increses). 
+From our results, taking $\alpha = 0.01$ should be a good starting value if the available corpus has a few thousand messages.</p>
 
 </div>
 </div>

@@ -13017,45 +13017,6 @@ ul.typeahead-list  > li > a.pull-right {
 .highlight .vm { color: #19177C } /* Name.Variable.Magic */
 .highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
     </style>
-<style type="text/css">
-    
-/* Temporary definitions which will become obsolete with Notebook release 5.0 */
-.ansi-black-fg { color: #3E424D; }
-.ansi-black-bg { background-color: #3E424D; }
-.ansi-black-intense-fg { color: #282C36; }
-.ansi-black-intense-bg { background-color: #282C36; }
-.ansi-red-fg { color: #E75C58; }
-.ansi-red-bg { background-color: #E75C58; }
-.ansi-red-intense-fg { color: #B22B31; }
-.ansi-red-intense-bg { background-color: #B22B31; }
-.ansi-green-fg { color: #00A250; }
-.ansi-green-bg { background-color: #00A250; }
-.ansi-green-intense-fg { color: #007427; }
-.ansi-green-intense-bg { background-color: #007427; }
-.ansi-yellow-fg { color: #DDB62B; }
-.ansi-yellow-bg { background-color: #DDB62B; }
-.ansi-yellow-intense-fg { color: #B27D12; }
-.ansi-yellow-intense-bg { background-color: #B27D12; }
-.ansi-blue-fg { color: #208FFB; }
-.ansi-blue-bg { background-color: #208FFB; }
-.ansi-blue-intense-fg { color: #0065CA; }
-.ansi-blue-intense-bg { background-color: #0065CA; }
-.ansi-magenta-fg { color: #D160C4; }
-.ansi-magenta-bg { background-color: #D160C4; }
-.ansi-magenta-intense-fg { color: #A03196; }
-.ansi-magenta-intense-bg { background-color: #A03196; }
-.ansi-cyan-fg { color: #60C6C8; }
-.ansi-cyan-bg { background-color: #60C6C8; }
-.ansi-cyan-intense-fg { color: #258F8F; }
-.ansi-cyan-intense-bg { background-color: #258F8F; }
-.ansi-white-fg { color: #C5C1B4; }
-.ansi-white-bg { background-color: #C5C1B4; }
-.ansi-white-intense-fg { color: #A1A6B2; }
-.ansi-white-intense-bg { background-color: #A1A6B2; }
-
-.ansi-bold { font-weight: bold; }
-
-    </style>
 
 
 <style type="text/css">
@@ -13116,13 +13077,14 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Exploring-the-CIA-Factbook--(Work-In-Progress)-">Exploring the CIA Factbook <font style="color:rgb(0,100,200)"> (Work In Progress) </font><a class="anchor-link" href="#Exploring-the-CIA-Factbook--(Work-In-Progress)-">&#182;</a></h1><p>In this project we explore the Central Intelligence Agency (CIA) World Factbook, a compendium of statistics about all countries on Earth. 
+<h1 id="Exploring-the-CIA-Factbook">Exploring the CIA Factbook<a class="anchor-link" href="#Exploring-the-CIA-Factbook">&#182;</a></h1><p>In this project we explore the Central Intelligence Agency (CIA) World Factbook, a compendium of statistics about all countries on Earth, plus some regions like the European Union or Macau. 
 The database, <code>factbook.db</code>, was downloaded from <a href="https://github.com/factbook">this GitHub repository</a> in January 2020. 
 It was released on 1 November 2015 and has (as of 05 January 2020) never been updated. 
 More information on the Factbook can be found on <a href="https://en.wikipedia.org/wiki/The_World_Factbook">“The World Factbook” Wikipedia page</a>.</p>
+<p>The main aim of this project is to learn to explore SQL databases with Pandas.</p>
 <h2 id="Interfacing-SQL-with-Pandas">Interfacing SQL with Pandas<a class="anchor-link" href="#Interfacing-SQL-with-Pandas">&#182;</a></h2><p>We will access information in the database using SQL queries, and analyse it using the Pandas library. 
 To this end, we will define a connection <code>conn</code> to the database and a function <code>SQL_to_pandas</code> taking an SQL query and returning its result in a Pandas dataframe. 
-First, we import the relevent packages:</p>
+We first import the relevent packages:</p>
 
 </div>
 </div>
@@ -13146,7 +13108,7 @@ First, we import the relevent packages:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We then define the connectin and <code>SQL_to_pandas</code> function:</p>
+<p>We then define the connection and <code>SQL_to_pandas</code> function:</p>
 
 </div>
 </div>
@@ -13174,7 +13136,7 @@ First, we import the relevent packages:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Data-exploration">Data exploration<a class="anchor-link" href="#Data-exploration">&#182;</a></h1><p>To see what is in the database, let us print information on the tables it contains:</p>
+<h2 id="Data-exploration">Data exploration<a class="anchor-link" href="#Data-exploration">&#182;</a></h2><h3 id="Structure-of-the-database">Structure of the database<a class="anchor-link" href="#Structure-of-the-database">&#182;</a></h3><p>To see what is in the database, let us print information on the tables it contains:</p>
 
 </div>
 </div>
@@ -13425,13 +13387,13 @@ Let us print the 5 first rows of the former:</p>
 <li><code>area_water</code>: the area covered by water in square kilometers, </li>
 <li><code>population</code>: the total population, </li>
 <li><code>population_growth</code>: annual population growth as a percentage,</li>
-<li><code>birth_rate</code>: the birth rate (number of births a year per 1000 people),</li>
-<li><code>death_rate</code>: the death rate (number of deatth a year per 1000 people),</li>
+<li><code>birth_rate</code>: the birth rate (number of births per year per 1000 people),</li>
+<li><code>death_rate</code>: the death rate (number of deatth per year per 1000 people),</li>
 <li><code>migration_rate</code>: the migration rate,</li>
-<li><code>created_at</code>: the date and time when the entry was added (in year-month-day time format),</li>
-<li><code>updated_at</code>: the date and time when the entry was last updated (in year-month-day time format).</li>
+<li><code>created_at</code>: the date and time when the entry was added (in year-month-day nour-minute-second format),</li>
+<li><code>updated_at</code>: the date and time when the entry was last updated (in year-month-day hour-minute-second format).</li>
 </ul>
-<p>Let us print the other table:</p>
+<p>Let us check that the country code has always two characters:</p>
 
 </div>
 </div>
@@ -13439,6 +13401,50 @@ Let us print the 5 first rows of the former:</p>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">country_codes</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;SELECT code FROM facts&#39;</span><span class="p">)</span>
+<span class="n">country_codes</span><span class="p">[</span><span class="s1">&#39;code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">len</span><span class="p">)</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[5]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>2    261
+Name: code, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Each of the 261 entries of the <code>code</code> column indeed has length 2.
+Let us now print the other table:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM sqlite_sequence&#39;</span><span class="p">)</span>
@@ -13454,7 +13460,7 @@ Let us print the 5 first rows of the former:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[5]:</div>
+    <div class="prompt output_prompt">Out[6]:</div>
 
 
 
@@ -13502,7 +13508,7 @@ Let us print the 5 first rows of the former:</p>
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>This table contains only the number of rows in the other one.</p>
-<p>Let us focus on the populations and their variations. 
+<h3 id="Populations-and-their-variations">Populations and their variations<a class="anchor-link" href="#Populations-and-their-variations">&#182;</a></h3><p>Let us focus on the populations and their variations. 
 The following query prints the minima and maxima of the populations and their growths.</p>
 
 </div>
@@ -13510,7 +13516,7 @@ The following query prints the minima and maxima of the populations and their gr
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -13533,18 +13539,18 @@ The following query prints the minima and maxima of the populations and their gr
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[6]:</div>
+    <div class="prompt output_prompt">Out[7]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <style  type="text/css" >
-</style><table id="T_50467b68_2fab_11ea_9870_4d17cb2b59a8" ><thead>    <tr>        <th class="col_heading level0 col0" >Lowest Population</th>        <th class="col_heading level0 col1" >Highest Population</th>        <th class="col_heading level0 col2" >Lowest Population Growth</th>        <th class="col_heading level0 col3" >Highest Population Growth</th>    </tr></thead><tbody>
+</style><table id="T_b10befd6_5590_11ea_bfeb_3f2486ae02a0" ><thead>    <tr>        <th class="col_heading level0 col0" >Lowest Population</th>        <th class="col_heading level0 col1" >Highest Population</th>        <th class="col_heading level0 col2" >Lowest Population Growth</th>        <th class="col_heading level0 col3" >Highest Population Growth</th>    </tr></thead><tbody>
                 <tr>
-                                <td id="T_50467b68_2fab_11ea_9870_4d17cb2b59a8row0_col0" class="data row0 col0" >0</td>
-                        <td id="T_50467b68_2fab_11ea_9870_4d17cb2b59a8row0_col1" class="data row0 col1" >7256490011</td>
-                        <td id="T_50467b68_2fab_11ea_9870_4d17cb2b59a8row0_col2" class="data row0 col2" >0</td>
-                        <td id="T_50467b68_2fab_11ea_9870_4d17cb2b59a8row0_col3" class="data row0 col3" >4.02</td>
+                                <td id="T_b10befd6_5590_11ea_bfeb_3f2486ae02a0row0_col0" class="data row0 col0" >0</td>
+                        <td id="T_b10befd6_5590_11ea_bfeb_3f2486ae02a0row0_col1" class="data row0 col1" >7256490011</td>
+                        <td id="T_b10befd6_5590_11ea_bfeb_3f2486ae02a0row0_col2" class="data row0 col2" >0</td>
+                        <td id="T_b10befd6_5590_11ea_bfeb_3f2486ae02a0row0_col3" class="data row0 col3" >4.02</td>
             </tr>
     </tbody></table>
 </div>
@@ -13570,7 +13576,7 @@ The following query prints the minima and maxima of the populations and their gr
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -13590,42 +13596,42 @@ The following query prints the minima and maxima of the populations and their gr
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[7]:</div>
+    <div class="prompt output_prompt">Out[8]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <style  type="text/css" >
-</style><table id="T_50484448_2fab_11ea_9870_4d17cb2b59a8" ><thead>    <tr>        <th class="col_heading level0 col0" >id</th>        <th class="col_heading level0 col1" >code</th>        <th class="col_heading level0 col2" >name</th>        <th class="col_heading level0 col3" >area</th>        <th class="col_heading level0 col4" >area_land</th>        <th class="col_heading level0 col5" >area_water</th>        <th class="col_heading level0 col6" >population</th>        <th class="col_heading level0 col7" >population_growth</th>        <th class="col_heading level0 col8" >birth_rate</th>        <th class="col_heading level0 col9" >death_rate</th>        <th class="col_heading level0 col10" >migration_rate</th>        <th class="col_heading level0 col11" >created_at</th>        <th class="col_heading level0 col12" >updated_at</th>    </tr></thead><tbody>
+</style><table id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0" ><thead>    <tr>        <th class="col_heading level0 col0" >id</th>        <th class="col_heading level0 col1" >code</th>        <th class="col_heading level0 col2" >name</th>        <th class="col_heading level0 col3" >area</th>        <th class="col_heading level0 col4" >area_land</th>        <th class="col_heading level0 col5" >area_water</th>        <th class="col_heading level0 col6" >population</th>        <th class="col_heading level0 col7" >population_growth</th>        <th class="col_heading level0 col8" >birth_rate</th>        <th class="col_heading level0 col9" >death_rate</th>        <th class="col_heading level0 col10" >migration_rate</th>        <th class="col_heading level0 col11" >created_at</th>        <th class="col_heading level0 col12" >updated_at</th>    </tr></thead><tbody>
                 <tr>
-                                <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col0" class="data row0 col0" >250</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col1" class="data row0 col1" >ay</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col2" class="data row0 col2" >Antarctica</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col3" class="data row0 col3" >None</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col4" class="data row0 col4" >280000</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col5" class="data row0 col5" >None</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col6" class="data row0 col6" >0</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col7" class="data row0 col7" >nan</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col8" class="data row0 col8" >nan</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col9" class="data row0 col9" >nan</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col10" class="data row0 col10" >None</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col11" class="data row0 col11" >2015-11-01 13:38:44.885746</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row0_col12" class="data row0 col12" >2015-11-01 13:38:44.885746</td>
+                                <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col0" class="data row0 col0" >250</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col1" class="data row0 col1" >ay</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col2" class="data row0 col2" >Antarctica</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col3" class="data row0 col3" >None</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col4" class="data row0 col4" >280000</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col5" class="data row0 col5" >None</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col6" class="data row0 col6" >0</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col7" class="data row0 col7" >nan</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col8" class="data row0 col8" >nan</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col9" class="data row0 col9" >nan</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col10" class="data row0 col10" >None</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col11" class="data row0 col11" >2015-11-01 13:38:44.885746</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row0_col12" class="data row0 col12" >2015-11-01 13:38:44.885746</td>
             </tr>
             <tr>
-                                <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col0" class="data row1 col0" >261</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col1" class="data row1 col1" >xx</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col2" class="data row1 col2" >World</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col3" class="data row1 col3" >None</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col4" class="data row1 col4" >nan</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col5" class="data row1 col5" >None</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col6" class="data row1 col6" >7256490011</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col7" class="data row1 col7" >1.08</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col8" class="data row1 col8" >18.6</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col9" class="data row1 col9" >7.8</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col10" class="data row1 col10" >None</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col11" class="data row1 col11" >2015-11-01 13:39:09.910721</td>
-                        <td id="T_50484448_2fab_11ea_9870_4d17cb2b59a8row1_col12" class="data row1 col12" >2015-11-01 13:39:09.910721</td>
+                                <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col0" class="data row1 col0" >261</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col1" class="data row1 col1" >xx</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col2" class="data row1 col2" >World</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col3" class="data row1 col3" >None</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col4" class="data row1 col4" >nan</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col5" class="data row1 col5" >None</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col6" class="data row1 col6" >7256490011</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col7" class="data row1 col7" >1.08</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col8" class="data row1 col8" >18.6</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col9" class="data row1 col9" >7.8</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col10" class="data row1 col10" >None</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col11" class="data row1 col11" >2015-11-01 13:39:09.910721</td>
+                        <td id="T_b10defd4_5590_11ea_bfeb_3f2486ae02a0row1_col12" class="data row1 col12" >2015-11-01 13:39:09.910721</td>
             </tr>
     </tbody></table>
 </div>
@@ -13648,11 +13654,11 @@ The highest reported population is that of the entire world.</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_birth_death</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
-<span class="s1">SELECT population, population_growth, birth_rate, death_rate</span>
+<span class="s1">SELECT name, population, population_growth, birth_rate, death_rate</span>
 <span class="s1">FROM facts</span>
 <span class="s1">WHERE  name NOT IN (&quot;Antartica&quot;,&quot;World&quot;)</span>
 <span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
@@ -13691,14 +13697,101 @@ The highest reported population is that of the entire world.</p>
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>We notice that a large majority of countries have less than 200 million inhabitants, while a few outliers have more than one billion. 
-Let us remove look at the population distribution without these outliers:</p>
+Let us see which countries have the highest population:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_birth_death</span><span class="p">[</span><span class="n">pop_birth_death</span><span class="p">[</span><span class="s1">&#39;population&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="o">*</span><span class="mi">10</span><span class="o">**</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;population&#39;</span><span class="p">,</span> <span class="n">ascending</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">hide_index</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[10]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<style  type="text/css" >
+</style><table id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >population</th>        <th class="col_heading level0 col2" >population_growth</th>        <th class="col_heading level0 col3" >birth_rate</th>        <th class="col_heading level0 col4" >death_rate</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row0_col0" class="data row0 col0" >China</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row0_col1" class="data row0 col1" >1.36749e+09</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row0_col2" class="data row0 col2" >0.45</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row0_col3" class="data row0 col3" >12.49</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row0_col4" class="data row0 col4" >7.53</td>
+            </tr>
+            <tr>
+                                <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row1_col0" class="data row1 col0" >India</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row1_col1" class="data row1 col1" >1.2517e+09</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row1_col2" class="data row1 col2" >1.22</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row1_col3" class="data row1 col3" >19.55</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row1_col4" class="data row1 col4" >7.32</td>
+            </tr>
+            <tr>
+                                <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row2_col0" class="data row2 col0" >European Union</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row2_col1" class="data row2 col1" >5.13949e+08</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row2_col2" class="data row2 col2" >0.25</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row2_col3" class="data row2 col3" >10.2</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row2_col4" class="data row2 col4" >10.2</td>
+            </tr>
+            <tr>
+                                <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row3_col0" class="data row3 col0" >United States</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row3_col1" class="data row3 col1" >3.21369e+08</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row3_col2" class="data row3 col2" >0.78</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row3_col3" class="data row3 col3" >12.49</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row3_col4" class="data row3 col4" >8.15</td>
+            </tr>
+            <tr>
+                                <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row4_col0" class="data row4 col0" >Indonesia</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row4_col1" class="data row4 col1" >2.55994e+08</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row4_col2" class="data row4 col2" >0.92</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row4_col3" class="data row4 col3" >16.72</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row4_col4" class="data row4 col4" >6.37</td>
+            </tr>
+            <tr>
+                                <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row5_col0" class="data row5 col0" >Brazil</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row5_col1" class="data row5 col1" >2.0426e+08</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row5_col2" class="data row5 col2" >0.77</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row5_col3" class="data row5 col3" >14.46</td>
+                        <td id="T_b175cab4_5590_11ea_bfeb_3f2486ae02a0row5_col4" class="data row5 col4" >6.58</td>
+            </tr>
+    </tbody></table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The five most populous countries are China, India, the United States of America, Idonesia, and Brazil. 
+We notice that the European Union is included in the dataset, although it includes several countries. 
+If one is to do precise statistics on countries, such conglomerates, as well as other regions which are technically not countries, will need to be removed.</p>
+<p>Let us look at the population distribution without these outliers:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_no_outl</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -13749,7 +13842,7 @@ Let us focus on them:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_small</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -13799,7 +13892,7 @@ Let us focus on them:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_log</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -13808,7 +13901,8 @@ Let us focus on them:</p>
 <span class="s1">WHERE name != &quot;World&quot;</span>
 <span class="s1">    AND population &gt; 0</span>
 <span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
-<span class="n">pop_log</span><span class="p">[</span><span class="s1">&#39;log(population)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pop_log</span><span class="p">[</span><span class="s1">&#39;population&#39;</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="c1"># logarithm f the population in base 10</span>
+<span class="n">pop_log</span><span class="p">[</span><span class="s1">&#39;log(population)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">pop_log</span><span class="p">[</span><span class="s1">&#39;population&#39;</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> 
 <span class="n">pop_log</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;population&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">pop_log</span><span class="o">.</span><span class="n">hist</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -13844,14 +13938,15 @@ Let us focus on them:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us now focus on the population density.</p>
+<p>A plurality of countries have populations between 10⁶ and 10⁸.</p>
+<h3 id="Population-density">Population density<a class="anchor-link" href="#Population-density">&#182;</a></h3><p>Let us now focus on the population density, defined as the number of inhabitants per square kilometer of land.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_density</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -13861,7 +13956,7 @@ Let us focus on them:</p>
 <span class="s1">    AND population &gt; 0</span>
 <span class="s1">&#39;&#39;&#39;</span><span class="p">)</span>
 <span class="n">pop_density</span><span class="o">.</span><span class="n">hist</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Population density (inh. per sq. km)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Population density (inh. per sq. km of land)&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
@@ -13881,7 +13976,7 @@ Let us focus on them:</p>
 
 
 <div class="output_png output_subarea ">
-<img src="data:image/png;base64,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
+<img src="data:image/png;base64,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
 "
 >
 </div>
@@ -13903,7 +13998,7 @@ Let us see which countries have such a high density:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_density</span><span class="p">[</span><span class="n">pop_density</span><span class="p">[</span><span class="s1">&#39;density&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2000</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;density&#39;</span><span class="p">,</span> <span class="n">ascending</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">hide_index</span><span class="p">()</span>
@@ -13919,36 +14014,36 @@ Let us see which countries have such a high density:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[24]:</div>
+    <div class="prompt output_prompt">Out[15]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <style  type="text/css" >
-</style><table id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >density</th>    </tr></thead><tbody>
+</style><table id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >density</th>    </tr></thead><tbody>
                 <tr>
-                                <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row0_col0" class="data row0 col0" >Macau</td>
-                        <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row0_col1" class="data row0 col1" >21169</td>
+                                <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row0_col0" class="data row0 col0" >Macau</td>
+                        <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row0_col1" class="data row0 col1" >21169</td>
             </tr>
             <tr>
-                                <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row1_col0" class="data row1 col0" >Monaco</td>
-                        <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row1_col1" class="data row1 col1" >15267.5</td>
+                                <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row1_col0" class="data row1 col0" >Monaco</td>
+                        <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row1_col1" class="data row1 col1" >15267.5</td>
             </tr>
             <tr>
-                                <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row2_col0" class="data row2 col0" >Singapore</td>
-                        <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row2_col1" class="data row2 col1" >8259.78</td>
+                                <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row2_col0" class="data row2 col0" >Singapore</td>
+                        <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row2_col1" class="data row2 col1" >8259.78</td>
             </tr>
             <tr>
-                                <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row3_col0" class="data row3 col0" >Hong Kong</td>
-                        <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row3_col1" class="data row3 col1" >6655.27</td>
+                                <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row3_col0" class="data row3 col0" >Hong Kong</td>
+                        <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row3_col1" class="data row3 col1" >6655.27</td>
             </tr>
             <tr>
-                                <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row4_col0" class="data row4 col0" >Gaza Strip</td>
-                        <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row4_col1" class="data row4 col1" >5191.82</td>
+                                <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row4_col0" class="data row4 col0" >Gaza Strip</td>
+                        <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row4_col1" class="data row4 col1" >5191.82</td>
             </tr>
             <tr>
-                                <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row5_col0" class="data row5 col0" >Gibraltar</td>
-                        <td id="T_68b13f8e_2fac_11ea_9870_4d17cb2b59a8row5_col1" class="data row5 col1" >4876.33</td>
+                                <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row5_col0" class="data row5 col0" >Gibraltar</td>
+                        <td id="T_b1efe452_5590_11ea_bfeb_3f2486ae02a0row5_col1" class="data row5 col1" >4876.33</td>
             </tr>
     </tbody></table>
 </div>
@@ -13962,16 +14057,16 @@ Let us see which countries have such a high density:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Six countries have such a high population density. 
-The country with highest density is Macau, followed by Monaco and Singapore.</p>
-<p>Let us now look at the countries with smallest densities:</p>
+<p>Six regions have such a high population density. 
+The region with highest density is Macau (which is not a country per se), followed by Monaco and Singapore.</p>
+<p>Let us now look at the regions with smallest densities:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_density</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;density&#39;</span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">hide_index</span><span class="p">()</span>
@@ -13987,32 +14082,32 @@ The country with highest density is Macau, followed by Monaco and Singapore.</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[25]:</div>
+    <div class="prompt output_prompt">Out[16]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <style  type="text/css" >
-</style><table id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >density</th>    </tr></thead><tbody>
+</style><table id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >density</th>    </tr></thead><tbody>
                 <tr>
-                                <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row0_col0" class="data row0 col0" >Greenland</td>
-                        <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row0_col1" class="data row0 col1" >0.0266531</td>
+                                <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row0_col0" class="data row0 col0" >Greenland</td>
+                        <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row0_col1" class="data row0 col1" >0.0266531</td>
             </tr>
             <tr>
-                                <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row1_col0" class="data row1 col0" >Svalbard</td>
-                        <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row1_col1" class="data row1 col1" >0.0301716</td>
+                                <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row1_col0" class="data row1 col0" >Svalbard</td>
+                        <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row1_col1" class="data row1 col1" >0.0301716</td>
             </tr>
             <tr>
-                                <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row2_col0" class="data row2 col0" >Falkland Islands (Islas Malvinas)</td>
-                        <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row2_col1" class="data row2 col1" >0.276103</td>
+                                <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row2_col0" class="data row2 col0" >Falkland Islands (Islas Malvinas)</td>
+                        <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row2_col1" class="data row2 col1" >0.276103</td>
             </tr>
             <tr>
-                                <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row3_col0" class="data row3 col0" >Pitcairn Islands</td>
-                        <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row3_col1" class="data row3 col1" >1.02128</td>
+                                <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row3_col0" class="data row3 col0" >Pitcairn Islands</td>
+                        <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row3_col1" class="data row3 col1" >1.02128</td>
             </tr>
             <tr>
-                                <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row4_col0" class="data row4 col0" >Mongolia</td>
-                        <td id="T_6a893c44_2fac_11ea_9870_4d17cb2b59a8row4_col1" class="data row4 col1" >1.92649</td>
+                                <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row4_col0" class="data row4 col0" >Mongolia</td>
+                        <td id="T_b1fcfbce_5590_11ea_bfeb_3f2486ae02a0row4_col1" class="data row4 col1" >1.92649</td>
             </tr>
     </tbody></table>
 </div>
@@ -14034,7 +14129,7 @@ The country with highest density is Macau, followed by Monaco and Singapore.</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[29]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_density_log</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -14080,14 +14175,14 @@ The country with highest density is Macau, followed by Monaco and Singapore.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Finally, let us focus on the ratio of water to land:</p>
+<h3 id="Water-and-land">Water and land<a class="anchor-link" href="#Water-and-land">&#182;</a></h3><p>Finally, let us focus on the ratio of water to land:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[41]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">wat_to_lan</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -14138,7 +14233,7 @@ Let us see which country it is:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[42]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">wat_to_lan</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;water_to_land&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">hide_index</span><span class="p">()</span>
@@ -14154,16 +14249,16 @@ Let us see which country it is:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[42]:</div>
+    <div class="prompt output_prompt">Out[19]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <style  type="text/css" >
-</style><table id="T_922fef80_2fad_11ea_9870_4d17cb2b59a8" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >water_to_land</th>    </tr></thead><tbody>
+</style><table id="T_b23c34ec_5590_11ea_bfeb_3f2486ae02a0" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >water_to_land</th>    </tr></thead><tbody>
                 <tr>
-                                <td id="T_922fef80_2fad_11ea_9870_4d17cb2b59a8row0_col0" class="data row0 col0" >British Indian Ocean Territory</td>
-                        <td id="T_922fef80_2fad_11ea_9870_4d17cb2b59a8row0_col1" class="data row0 col1" >905.667</td>
+                                <td id="T_b23c34ec_5590_11ea_bfeb_3f2486ae02a0row0_col0" class="data row0 col0" >British Indian Ocean Territory</td>
+                        <td id="T_b23c34ec_5590_11ea_bfeb_3f2486ae02a0row0_col1" class="data row0 col1" >905.667</td>
             </tr>
     </tbody></table>
 </div>
@@ -14185,7 +14280,7 @@ Let us see which country it is:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[43]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">wat_to_lan_2</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -14236,7 +14331,7 @@ Let us see which country it is:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[44]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">wat_to_lan_2</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;water_to_land&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)[:</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">hide_index</span><span class="p">()</span>
@@ -14252,16 +14347,16 @@ Let us see which country it is:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[44]:</div>
+    <div class="prompt output_prompt">Out[21]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <style  type="text/css" >
-</style><table id="T_96b534a2_2fad_11ea_9870_4d17cb2b59a8" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >water_to_land</th>    </tr></thead><tbody>
+</style><table id="T_b26097e2_5590_11ea_bfeb_3f2486ae02a0" ><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >water_to_land</th>    </tr></thead><tbody>
                 <tr>
-                                <td id="T_96b534a2_2fad_11ea_9870_4d17cb2b59a8row0_col0" class="data row0 col0" >Virgin Islands</td>
-                        <td id="T_96b534a2_2fad_11ea_9870_4d17cb2b59a8row0_col1" class="data row0 col1" >4.52023</td>
+                                <td id="T_b26097e2_5590_11ea_bfeb_3f2486ae02a0row0_col0" class="data row0 col0" >Virgin Islands</td>
+                        <td id="T_b26097e2_5590_11ea_bfeb_3f2486ae02a0row0_col1" class="data row0 col1" >4.52023</td>
             </tr>
     </tbody></table>
 </div>
@@ -14283,7 +14378,7 @@ Let us see which country it is:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[45]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">wat_to_lan_3</span> <span class="o">=</span> <span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -14336,7 +14431,7 @@ Let us check this:</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[46]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -14356,7 +14451,7 @@ Let us check this:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[46]:</div>
+    <div class="prompt output_prompt">Out[23]:</div>
 
 
 
@@ -14409,14 +14504,14 @@ Let us check this:</p>
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>They are indeed the only two.</p>
-<p>Finally, let us see how many countries have no water area at all:</p>
+<p>Let us now see how many countries have no water area at all:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[48]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">SQL_to_pandas</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
@@ -14436,7 +14531,7 @@ Let us check this:</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[48]:</div>
+    <div class="prompt output_prompt">Out[24]:</div>
 
 
 
@@ -14482,6 +14577,30 @@ Let us check this:</p>
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>There are 90 countries with no water area at all.</p>
+<h2 id="Close-the-connection">Close the connection<a class="anchor-link" href="#Close-the-connection">&#182;</a></h2><p>Finally, let us close the connection to the database:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Conclusion">Conclusion<a class="anchor-link" href="#Conclusion">&#182;</a></h2><p>In this project, we have seen that the Pandas and sqlite3 modules can be useful tools to explore a small SQL database.
+We have also noticed that the CIA Factbook contains information on regions of the world wihich are not countries per se. 
+This should be taken into account if doing a more precise statistical analysis.</p>
 
 </div>
 </div>

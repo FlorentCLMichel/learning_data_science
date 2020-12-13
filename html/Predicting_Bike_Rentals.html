@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>6_49_lottery_probabilities</title>
+<title>Predicting_Bike_Rentals</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13077,22 +13077,15 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Winning-probabilities-at-the-6/49-lottery-game">Winning probabilities at the 6/49 lottery game<a class="anchor-link" href="#Winning-probabilities-at-the-6/49-lottery-game">&#182;</a></h1><p>Lotto 6/49, launched on June 12, 1982, was the first Canadian Lottery game to allow players to choose their own numbers. 
-Winning numbers are drawn every Wednesday and Saturday by the Interprovincial Lottery Corporation. 
-Each time, 6 numbers are drawn wthout replacement from a set of 49, plus a bonus number. 
-A player wins money if at least two of the first six are among the numbers they chose. 
-To win the hoghest amount, called the ‘jackpot prize’, a player must have the first six correct numbers.</p>
-<p>Although most people start playing the lottery for fun, it can also turn into an addiction or some players, with potentially disastrous consequences. 
-One important factor in the development of such addictions is the communication centred on the large amount of money the jackpot prize represents and on the change of life it can entail. 
-This focus on a technically possible but unlikely outcome can overshadow how small its probability is, or, more prosaically, that a player is unlikely to win anything at all.</p>
-<p>In this short project, I will estimate some winning likelihoods, in the hope that realizing their smallness may help prevent addiction. 
-I shall mostly use basic Python, in an effort to make the code as transparent as possible, and since the relatively small numbers involved do not require a lot of computing power. 
-I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the functions defined here on very large integers.</p>
-<h2 id="Basic-combinatorial-functions">Basic combinatorial functions<a class="anchor-link" href="#Basic-combinatorial-functions">&#182;</a></h2><p>Let us first define two functions:</p>
-<ul>
-<li><code>factorial</code>, taking a non-negative integer $n$ and returning $n!$, </li>
-<li><code>combination</code>, taking two non-negative integers $n$ and $k$ and returning ${n\choose k}$.</li>
-</ul>
+<h1 id="Predicting-the-number-of-bikes-rented-per-hour">Predicting the number of bikes rented per hour<a class="anchor-link" href="#Predicting-the-number-of-bikes-rented-per-hour">&#182;</a></h1><p>In this project, we use a few simple machine-learning models (linear regression, decision tree, and random forest) to predict the hourly number of bikes rented in Washington, D.C.. 
+Like many other American cities, Washington, D.C. has a communal bike-renting service. 
+Bikes can be rented for either one hour or one day.</p>
+<p>One important problem for cities setting or and maintaning similar services is to estimate how many and where bicycles are needed. 
+Indeed, they need to ensure the number of bikes on offer is high enough to cover the residents' needs while avoiding the extra costs and space obstruction of keeping more bikes than necessary. 
+We here deal with the first question, and aim at predicting the number of bikes rented per hour.</p>
+<h2 id="The-Dataset">The Dataset<a class="anchor-link" href="#The-Dataset">&#182;</a></h2><p>We will work with a dataset containing the hourly and daily count of rental bikes between the years 2011 and 2012 in Capital bikeshare system from the <a href="http://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset">UC Irvine Machine Learning Repository</a>. 
+It was compiled by Hadi Fanaee from the Laboratory of Artificial Intelligence and Decision Support (LIAAD), University of Porto .</p>
+<p>We first import the packages we will need:</p>
 
 </div>
 </div>
@@ -13102,25 +13095,26 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the factorial of n </span>
-<span class="sd">    n: non-negative integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">*=</span> <span class="n">i</span>
-    <span class="k">return</span> <span class="n">res</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Pandas to work with the dataset</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="k">def</span> <span class="nf">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the number of combinations of k elements among n</span>
-<span class="sd">    n and k: non-negative integers </span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">factorial</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+<span class="c1"># Numpy for numeric calculations</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Pyplot for plots</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># Linear regression model</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
+
+<span class="c1"># Decision tree</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeRegressor</span>
+
+<span class="c1"># Random forest</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+
+<span class="c1"># Mean squared error</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
 </pre></div>
 
     </div>
@@ -13131,8 +13125,7 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us also define the function <code>approximate_fraction_num</code> taking a float and returning a fraction close to it. 
-It takes an optional parameter <code>max_num</code>, equal to 10 by default, representing the maximum acceptable value for the numerator.</p>
+<p>Load the dataset and print the first few rows:</p>
 
 </div>
 </div>
@@ -13142,52 +13135,170 @@ It takes an optional parameter <code>max_num</code>, equal to 10 by default, rep
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the greatest common divisor to a and b</span>
-<span class="sd">    a: positive integer</span>
-<span class="sd">    b: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">a_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="n">b_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">a_</span>
-    <span class="n">r_</span> <span class="o">=</span> <span class="n">a_</span> <span class="o">%</span> <span class="n">b_</span>
-    <span class="k">while</span><span class="p">(</span><span class="n">r_</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">a_</span> <span class="o">=</span> <span class="n">b_</span>
-        <span class="n">b_</span> <span class="o">=</span> <span class="n">r_</span>
-        <span class="n">r_</span> <span class="o">=</span> <span class="n">a_</span> <span class="o">%</span> <span class="n">b_</span>
-    <span class="k">return</span> <span class="n">b_</span>
-
-<span class="k">def</span> <span class="nf">approximate_fraction</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">max_den</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the numerator and denominator of a fraction approximating f, with </span>
-<span class="sd">    a maximum denominator max_den</span>
-<span class="sd">    f: float</span>
-<span class="sd">    max_den: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="n">max_den</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_den</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span> 
-        <span class="n">num</span> <span class="o">+=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">))</span><span class="o">*</span><span class="mi">1</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">gcd</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">max_den</span><span class="p">)</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
-    <span class="n">den</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_den</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">den</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">approximate_fraction_num</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">max_num</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the numerator and denominator of a fraction approximating f, with </span>
-<span class="sd">    a maximum numerator max_num</span>
-<span class="sd">    f: float</span>
-<span class="sd">    max_num: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">frac_inv</span> <span class="o">=</span> <span class="n">approximate_fraction</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">f</span><span class="p">,</span> <span class="n">max_den</span> <span class="o">=</span> <span class="n">max_num</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">frac_inv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">frac_inv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bike_rentals</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../Data/Bike-Sharing-Dataset/hour.csv&#39;</span><span class="p">)</span>
+<span class="n">bike_rentals</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[2]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>instant</th>
+      <th>dteday</th>
+      <th>season</th>
+      <th>yr</th>
+      <th>mnth</th>
+      <th>hr</th>
+      <th>holiday</th>
+      <th>weekday</th>
+      <th>workingday</th>
+      <th>weathersit</th>
+      <th>temp</th>
+      <th>atemp</th>
+      <th>hum</th>
+      <th>windspeed</th>
+      <th>casual</th>
+      <th>registered</th>
+      <th>cnt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.2879</td>
+      <td>0.81</td>
+      <td>0.0</td>
+      <td>3</td>
+      <td>13</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.22</td>
+      <td>0.2727</td>
+      <td>0.80</td>
+      <td>0.0</td>
+      <td>8</td>
+      <td>32</td>
+      <td>40</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.22</td>
+      <td>0.2727</td>
+      <td>0.80</td>
+      <td>0.0</td>
+      <td>5</td>
+      <td>27</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.2879</td>
+      <td>0.75</td>
+      <td>0.0</td>
+      <td>3</td>
+      <td>10</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>4</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.2879</td>
+      <td>0.75</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13195,10 +13306,7 @@ It takes an optional parameter <code>max_num</code>, equal to 10 by default, rep
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Some-winning-probabilities">Some winning probabilities<a class="anchor-link" href="#Some-winning-probabilities">&#182;</a></h2><h3 id="Winning-the-jackpot-prize-in-one-try">Winning the jackpot prize in one try<a class="anchor-link" href="#Winning-the-jackpot-prize-in-one-try">&#182;</a></h3><p>Let $n$ be the number of elements in the set and $k$ be the number of elements drawn (in the case of the 6/49 game, they are respectively 49 and 6). 
-The probability $P_1(J)$ of winning the jackpot prize by playing once (<em>i.e.</em>, choosing a set of six numbers) is: 
-$$ P_1(J) = {n \choose k}^{-1} .$$
-Let us compute this number for $n = 49$ and $k = 6$:</p>
+<p>Let us see whether there are missing values:</p>
 
 </div>
 </div>
@@ -13208,11 +13316,7 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
-<span class="n">P_1_J</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-<span class="n">frac</span> <span class="o">=</span> <span class="n">approximate_fraction_num</span><span class="p">(</span><span class="n">P_1_J</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Winning probability: </span><span class="si">{:.1e}</span><span class="s1">, i.e., </span><span class="si">{:.7f}</span><span class="s1">, or </span><span class="si">{}</span><span class="s1"> over </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P_1_J</span><span class="p">,</span> <span class="n">P_1_J</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frac</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bike_rentals</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13229,7 +13333,30 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Winning probability: 7.2e-08, i.e., 0.0000072, or 1 over 13983816
+<pre>&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+RangeIndex: 17379 entries, 0 to 17378
+Data columns (total 17 columns):
+ #   Column      Non-Null Count  Dtype  
+---  ------      --------------  -----  
+ 0   instant     17379 non-null  int64  
+ 1   dteday      17379 non-null  object 
+ 2   season      17379 non-null  int64  
+ 3   yr          17379 non-null  int64  
+ 4   mnth        17379 non-null  int64  
+ 5   hr          17379 non-null  int64  
+ 6   holiday     17379 non-null  int64  
+ 7   weekday     17379 non-null  int64  
+ 8   workingday  17379 non-null  int64  
+ 9   weathersit  17379 non-null  int64  
+ 10  temp        17379 non-null  float64
+ 11  atemp       17379 non-null  float64
+ 12  hum         17379 non-null  float64
+ 13  windspeed   17379 non-null  float64
+ 14  casual      17379 non-null  int64  
+ 15  registered  17379 non-null  int64  
+ 16  cnt         17379 non-null  int64  
+dtypes: float64(4), int64(12), object(1)
+memory usage: 2.3+ MB
 </pre>
 </div>
 </div>
@@ -13241,9 +13368,9 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The probability of winning the jackpot prize is smaller than one over ten millions, which is rather small.</p>
-<h3 id="Would-I-have-won?">Would I have won?<a class="anchor-link" href="#Would-I-have-won?">&#182;</a></h3><p>To get more intuition about how small this number is, we want to write a function taking a six-numbers input and telling if, assuming this set was played many times, it would have won the jackpot prize at least once. 
-To this end, we first load the dataset <code>649.csv</code>, containing results from previous draws.</p>
+<p>It seems there is no missing value.</p>
+<p>In principle, the <code>cnt</code> column, giving the total number of rentals, should be the sum of the <code>casual</code> and <code>registered</code> ones. 
+Let us check this:</p>
 
 </div>
 </div>
@@ -13253,11 +13380,7 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../Data/649.csv&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="p">(</span><span class="n">bike_rentals</span><span class="p">[</span><span class="s1">&#39;cnt&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">bike_rentals</span><span class="p">[</span><span class="s1">&#39;casual&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">bike_rentals</span><span class="p">[</span><span class="s1">&#39;registered&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13270,243 +13393,14 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 
 <div class="output_area">
 
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>(3665, 11)
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[4]:</div>
 
 
 
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PRODUCT</th>
-      <th>DRAW NUMBER</th>
-      <th>SEQUENCE NUMBER</th>
-      <th>DRAW DATE</th>
-      <th>NUMBER DRAWN 1</th>
-      <th>NUMBER DRAWN 2</th>
-      <th>NUMBER DRAWN 3</th>
-      <th>NUMBER DRAWN 4</th>
-      <th>NUMBER DRAWN 5</th>
-      <th>NUMBER DRAWN 6</th>
-      <th>BONUS NUMBER</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>649</td>
-      <td>1</td>
-      <td>0</td>
-      <td>6/12/1982</td>
-      <td>3</td>
-      <td>11</td>
-      <td>12</td>
-      <td>14</td>
-      <td>41</td>
-      <td>43</td>
-      <td>13</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>649</td>
-      <td>2</td>
-      <td>0</td>
-      <td>6/19/1982</td>
-      <td>8</td>
-      <td>33</td>
-      <td>36</td>
-      <td>37</td>
-      <td>39</td>
-      <td>41</td>
-      <td>9</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>649</td>
-      <td>3</td>
-      <td>0</td>
-      <td>6/26/1982</td>
-      <td>1</td>
-      <td>6</td>
-      <td>23</td>
-      <td>24</td>
-      <td>27</td>
-      <td>39</td>
-      <td>34</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>649</td>
-      <td>4</td>
-      <td>0</td>
-      <td>7/3/1982</td>
-      <td>3</td>
-      <td>9</td>
-      <td>10</td>
-      <td>13</td>
-      <td>20</td>
-      <td>43</td>
-      <td>34</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>649</td>
-      <td>5</td>
-      <td>0</td>
-      <td>7/10/1982</td>
-      <td>5</td>
-      <td>14</td>
-      <td>21</td>
-      <td>31</td>
-      <td>34</td>
-      <td>47</td>
-      <td>45</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PRODUCT</th>
-      <th>DRAW NUMBER</th>
-      <th>SEQUENCE NUMBER</th>
-      <th>DRAW DATE</th>
-      <th>NUMBER DRAWN 1</th>
-      <th>NUMBER DRAWN 2</th>
-      <th>NUMBER DRAWN 3</th>
-      <th>NUMBER DRAWN 4</th>
-      <th>NUMBER DRAWN 5</th>
-      <th>NUMBER DRAWN 6</th>
-      <th>BONUS NUMBER</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>3660</th>
-      <td>649</td>
-      <td>3587</td>
-      <td>0</td>
-      <td>6/6/2018</td>
-      <td>10</td>
-      <td>15</td>
-      <td>23</td>
-      <td>38</td>
-      <td>40</td>
-      <td>41</td>
-      <td>35</td>
-    </tr>
-    <tr>
-      <th>3661</th>
-      <td>649</td>
-      <td>3588</td>
-      <td>0</td>
-      <td>6/9/2018</td>
-      <td>19</td>
-      <td>25</td>
-      <td>31</td>
-      <td>36</td>
-      <td>46</td>
-      <td>47</td>
-      <td>26</td>
-    </tr>
-    <tr>
-      <th>3662</th>
-      <td>649</td>
-      <td>3589</td>
-      <td>0</td>
-      <td>6/13/2018</td>
-      <td>6</td>
-      <td>22</td>
-      <td>24</td>
-      <td>31</td>
-      <td>32</td>
-      <td>34</td>
-      <td>16</td>
-    </tr>
-    <tr>
-      <th>3663</th>
-      <td>649</td>
-      <td>3590</td>
-      <td>0</td>
-      <td>6/16/2018</td>
-      <td>2</td>
-      <td>15</td>
-      <td>21</td>
-      <td>31</td>
-      <td>38</td>
-      <td>49</td>
-      <td>8</td>
-    </tr>
-    <tr>
-      <th>3664</th>
-      <td>649</td>
-      <td>3591</td>
-      <td>0</td>
-      <td>6/20/2018</td>
-      <td>14</td>
-      <td>24</td>
-      <td>31</td>
-      <td>35</td>
-      <td>37</td>
-      <td>48</td>
-      <td>17</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+<div class="output_text output_subarea output_execute_result">
+<pre>True    17379
+dtype: int64</pre>
 </div>
 
 </div>
@@ -13518,9 +13412,10 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This dataset contains results from all drawings that occurred before 21st June 2018. 
-Let us use it to build the list <code>drawings_6</code> of all drawings, excluding the bonus number. 
-We cast them as sets since the order is not important.</p>
+<p>This is indeed the case. 
+The dataset thus seems consistent in this regard.</p>
+<p>Our target variable will be the <code>cst</code> column, giving the total number of rentals for each hour. 
+Let us plot a histogram to get a glimpse of its distribution:</p>
 
 </div>
 </div>
@@ -13530,11 +13425,34 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;drawing_6&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;NUMBER DRAWN &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">7</span><span class="p">)]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-<span class="n">drawing_6</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;drawing_6&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">set</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bike_rentals</span><span class="p">[</span><span class="s1">&#39;cnt&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;number of rentals&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13542,7 +13460,8 @@ We cast them as sets since the order is not important.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We now define the function <code>has_aready_won</code> taking a six-numbers list or set and returning <code>True</code> if it has been drawn at least once and <code>False</code> otherwise (technically, it returns whether it has been drawn before June 21st 2018; but this only make a difference for a small number of sets):</p>
+<p>The distribution seems to be monotonically decreasing, with numbers smaller than 100 for nearly half of the rows.</p>
+<p>Let us now see how the other numeric coluns are correlated with <code>cnt</code>:</p>
 
 </div>
 </div>
@@ -13552,11 +13471,46 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">has_already_won</span><span class="p">(</span><span class="n">numbers</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span> <span class="ow">in</span> <span class="n">drawing_6</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bike_rentals</span><span class="o">.</span><span class="n">corr</span><span class="p">()[</span><span class="s1">&#39;cnt&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>cnt           1.000000
+registered    0.972151
+casual        0.694564
+temp          0.404772
+atemp         0.400929
+hr            0.394071
+instant       0.278379
+yr            0.250495
+season        0.178056
+mnth          0.120638
+windspeed     0.093234
+workingday    0.030284
+weekday       0.026900
+holiday      -0.030927
+weathersit   -0.142426
+hum          -0.322911
+Name: cnt, dtype: float64</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13564,7 +13518,14 @@ We cast them as sets since the order is not important.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us test it on two examples: one which was drawn and one which was not.</p>
+<p>The two columns <code>registered</code> and <code>casual</code> are strongly correlated with <code>cnt</code>. 
+This is not surprising as the later is the sum of the former two. 
+The correlation is significantly stronger for the <code>registered</code> column, which indicates that registered users account for most rentals.</p>
+<p>The next variables showing strongest correlation with <code>cnt</code> are the temperature (<code>temp</code>) and felt temperature (<code>atemp</code>), closely followed by the time of the day(<code>hr</code>). 
+The humidity (<code>hum</code>) also has a significant negative correlation.</p>
+<p>We can not use the <code>registered</code> and <code>casual</code> columns to make predictions as they contain information on what we want to predict. 
+It thus seems that the most relevent factors to focus on are the temperature, felt temperature, and humidity.</p>
+<p>Let us see whether they are correlated to each others:</p>
 
 </div>
 </div>
@@ -13574,8 +13535,8 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">has_already_won</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">41</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">has_already_won</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">41</span><span class="p">]))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;atemp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">]</span>
+<span class="n">bike_rentals</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13588,14 +13549,69 @@ We cast them as sets since the order is not important.</p>
 
 <div class="output_area">
 
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[7]:</div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>True
-False
-</pre>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>temp</th>
+      <th>atemp</th>
+      <th>hr</th>
+      <th>hum</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>temp</th>
+      <td>1.000000</td>
+      <td>0.987672</td>
+      <td>0.137603</td>
+      <td>-0.069881</td>
+    </tr>
+    <tr>
+      <th>atemp</th>
+      <td>0.987672</td>
+      <td>1.000000</td>
+      <td>0.133750</td>
+      <td>-0.051918</td>
+    </tr>
+    <tr>
+      <th>hr</th>
+      <td>0.137603</td>
+      <td>0.133750</td>
+      <td>1.000000</td>
+      <td>-0.276498</td>
+    </tr>
+    <tr>
+      <th>hum</th>
+      <td>-0.069881</td>
+      <td>-0.051918</td>
+      <td>-0.276498</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
 </div>
+</div>
+
 </div>
 
 </div>
@@ -13605,7 +13621,10 @@ False
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us now do a small experiment: we select a large number (say, 10000) of (not necessarily different) sets of six numbers at random, and count how much of them have been drawn at least once:</p>
+<p>There is a very strong correlation (close to 0.988) between the temperature and felt temperature. 
+It may thus be relevent to include only one of these two columns as they contain essentially the same information.</p>
+<h2 id="Feature-engineering">Feature engineering<a class="anchor-link" href="#Feature-engineering">&#182;</a></h2><h3 id="Time-of-the-day">Time of the day<a class="anchor-link" href="#Time-of-the-day">&#182;</a></h3><p>Let us first divide the day into 4 equal periods: morning from 6:00 to 11:59, afternoon from 12:00 to 17:59, evening from 18:00 to 23:59, and night from 0:00 to 5:59, associated respectively with the labels 1, 2, 3, and 4. 
+We call this column <code>time_label</code>.</p>
 
 </div>
 </div>
@@ -13615,18 +13634,23 @@ False
 <div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">choice</span><span class="p">,</span> <span class="n">seed</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">label_hour</span><span class="p">(</span><span class="n">hr</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    label the hour hr with 1 (morning), 2 (afternoon), 3 (evening), or 4 </span>
+<span class="sd">    (night)</span>
+<span class="sd">    </span>
+<span class="sd">    hr: integer between 0 and 23 (included)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">hr</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">4</span>
+    <span class="k">if</span> <span class="n">hr</span> <span class="o">&lt;</span> <span class="mi">12</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">hr</span> <span class="o">&lt;</span> <span class="mi">18</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="mi">3</span>
 
-<span class="n">n_sets</span> <span class="o">=</span> <span class="mi">10000</span>
-
-<span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix the seed to get the same result each time the code is run</span>
-<span class="n">n_has_won</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sets</span><span class="p">):</span> 
-    <span class="n">test_set</span> <span class="o">=</span> <span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">has_already_won</span><span class="p">(</span><span class="n">test_set</span><span class="p">):</span> 
-        <span class="n">n_has_won</span> <span class="o">+=</span> <span class="mi">1</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Among the </span><span class="si">{}</span><span class="s1"> sets, </span><span class="si">{}</span><span class="s1"> have been drawn at least once&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_has_won</span><span class="p">))</span>
+<span class="n">bike_rentals</span><span class="p">[</span><span class="s1">&#39;time_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bike_rentals</span><span class="p">[</span><span class="s1">&#39;hr&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">label_hour</span><span class="p">)</span>
+<span class="n">bike_rentals</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13639,13 +13663,160 @@ False
 
 <div class="output_area">
 
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[8]:</div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Among the 10000 sets, 2 have been drawn at least once
-</pre>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>instant</th>
+      <th>dteday</th>
+      <th>season</th>
+      <th>yr</th>
+      <th>mnth</th>
+      <th>hr</th>
+      <th>holiday</th>
+      <th>weekday</th>
+      <th>workingday</th>
+      <th>weathersit</th>
+      <th>temp</th>
+      <th>atemp</th>
+      <th>hum</th>
+      <th>windspeed</th>
+      <th>casual</th>
+      <th>registered</th>
+      <th>cnt</th>
+      <th>time_label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.2879</td>
+      <td>0.81</td>
+      <td>0.0</td>
+      <td>3</td>
+      <td>13</td>
+      <td>16</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.22</td>
+      <td>0.2727</td>
+      <td>0.80</td>
+      <td>0.0</td>
+      <td>8</td>
+      <td>32</td>
+      <td>40</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.22</td>
+      <td>0.2727</td>
+      <td>0.80</td>
+      <td>0.0</td>
+      <td>5</td>
+      <td>27</td>
+      <td>32</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.2879</td>
+      <td>0.75</td>
+      <td>0.0</td>
+      <td>3</td>
+      <td>10</td>
+      <td>13</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>2011-01-01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>4</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.2879</td>
+      <td>0.75</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
 </div>
+</div>
+
 </div>
 
 </div>
@@ -13655,31 +13826,9 @@ False
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Only 2 sets among the 1000 have been drawn at least once. 
-The probability for a given set to be drawn one specific day is thus quite small!</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Winning-the-jackpot-price-with-several-tickets">Winning the jackpot price with several tickets<a class="anchor-link" href="#Winning-the-jackpot-price-with-several-tickets">&#182;</a></h3><p>Assuming we play $l$ different valid tickets, where $l$ is a positive integer, the probability $P_l(J)$ to win the jackpot prize is:
-$$P_l(J) = l \times P_1(J).$$
-From the above results, having a probability of just 1 in 10 of winning would require playing more than one million sets of numbers. 
-At the time of writing (21 April 2020), the cost of playing six numbers is CAD3. 
-Having a probability to win the jackpot prize of more than one half requires buying more than 5,000,000 of them, for a total cost of CAD15,000,000. 
-Since the jackpot prize is only CAD6,000,000 at the moment, this would incur a large loss of money even if winning.</p>
-<h3 id="Having-a-few-matching-numbers">Having a few matching numbers<a class="anchor-link" href="#Having-a-few-matching-numbers">&#182;</a></h3><p>We now focus on smaller prizes. 
-The function <code>proba_prize</code> below takes 4 inputs:</p>
-<ul>
-<li>n (positive integer): the number of elements in the set, </li>
-<li>k (positive integer): the number of elements to be chosen by the player, </li>
-<li>l (positive integer): the number of elements that need to match for a given prize, excluding the bonus number, </li>
-<li>b (boolean): whether the bonus number needs to match</li>
-</ul>
-<p>It returns the probability of winning the price when playing once. 
-All inputs defaut to the jackpot prize setup.</p>
+<h3 id="Dropping-unnecessary-columns">Dropping unnecessary columns<a class="anchor-link" href="#Dropping-unnecessary-columns">&#182;</a></h3><p>The column <code>instant</code> serves an an index, and does not contain any actual information. 
+We will also not make use of the <code>dteday</code>, <code>registered</code>, <code>casual</code>, and <code>atemp</code> columns.
+Let us drop them:</p>
 
 </div>
 </div>
@@ -13689,23 +13838,146 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">proba_prize</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">49</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">proba_l_numbers</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="c1"># compute the probability that at least l numbers match</span>
-    <span class="k">for</span> <span class="n">l_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="c1"># probability that exactly l_ elements match</span>
-        <span class="c1"># for each choice of l_ elements among the k, the number of draws where </span>
-        <span class="c1"># they match while the k-l_ others don&#39;t match is equal to the number of</span>
-        <span class="c1"># ways of choosing k-l_ elements among n-k</span>
-        <span class="n">proba_l_numbers</span> <span class="o">+=</span> <span class="n">combination</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">l_</span><span class="p">)</span> <span class="o">*</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="o">-</span><span class="n">l_</span><span class="p">)</span> <span class="o">/</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b</span><span class="p">:</span>
-        <span class="c1"># if the bonus number needs to match</span>
-        <span class="k">return</span> <span class="n">proba_l_numbers</span> <span class="o">/</span> <span class="n">n</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">proba_l_numbers</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bike_rentals</span> <span class="o">=</span> <span class="n">bike_rentals</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;instant&#39;</span><span class="p">,</span> <span class="s1">&#39;dteday&#39;</span><span class="p">,</span> <span class="s1">&#39;registered&#39;</span><span class="p">,</span> <span class="s1">&#39;casual&#39;</span><span class="p">,</span> <span class="s1">&#39;atemp&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">bike_rentals</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>season</th>
+      <th>yr</th>
+      <th>mnth</th>
+      <th>hr</th>
+      <th>holiday</th>
+      <th>weekday</th>
+      <th>workingday</th>
+      <th>weathersit</th>
+      <th>temp</th>
+      <th>hum</th>
+      <th>windspeed</th>
+      <th>cnt</th>
+      <th>time_label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.81</td>
+      <td>0.0</td>
+      <td>16</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.22</td>
+      <td>0.80</td>
+      <td>0.0</td>
+      <td>40</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.22</td>
+      <td>0.80</td>
+      <td>0.0</td>
+      <td>32</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.75</td>
+      <td>0.0</td>
+      <td>13</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>4</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.75</td>
+      <td>0.0</td>
+      <td>1</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13713,7 +13985,8 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us apply this function to $l \in \lbrace 2, 3, 4, 5, 6 \rbrace$:</p>
+<h2 id="Separation-into-training-and-validation-sets">Separation into training and validation sets<a class="anchor-link" href="#Separation-into-training-and-validation-sets">&#182;</a></h2><p>We now divide the dataset into a training set <code>train</code> with about 80% of the data and a validation set <code>test</code> with the remaining data. 
+The performance of the models will be estimated using the mean squared error.</p>
 
 </div>
 </div>
@@ -13723,13 +13996,12 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
-    <span class="n">proba</span> <span class="o">=</span> <span class="n">proba_prize</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
-    <span class="n">frac</span> <span class="o">=</span> <span class="n">approximate_fraction_num</span><span class="p">(</span><span class="n">proba</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of having at least </span><span class="si">{}</span><span class="s1"> matching numbers: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">proba</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of having at least </span><span class="si">{}</span><span class="s1"> matching numbers: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately </span><span class="si">{}</span><span class="s1"> in </span><span class="si">{}</span><span class="s1">, or one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">proba</span><span class="p">,</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frac</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># we set a random state to make the results reproducible</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">bike_rentals</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">bike_rentals</span><span class="p">[</span><span class="o">~</span><span class="n">bike_rentals</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">index</span><span class="p">)]</span>
+
+<span class="n">display</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="n">display</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </pre></div>
 
     </div>
@@ -13745,14 +14017,255 @@ All inputs defaut to the jackpot prize setup.</p>
     <div class="prompt"></div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Probability of having at least 2 matching numbers: 1.51e-01, i.e., approximately 5 in 33, or one in 6
-Probability of having at least 3 matching numbers: 1.86e-02, i.e., approximately 10 in 537, or one in 53
-Probability of having at least 4 matching numbers: 9.87e-04, i.e., approximately one in 1013
-Probability of having at least 5 matching numbers: 1.85e-05, i.e., approximately 5 in 269958, or one in 53991
-Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately one in 13983816
-</pre>
+
+<div class="output_html rendered_html output_subarea ">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>season</th>
+      <th>yr</th>
+      <th>mnth</th>
+      <th>hr</th>
+      <th>holiday</th>
+      <th>weekday</th>
+      <th>workingday</th>
+      <th>weathersit</th>
+      <th>temp</th>
+      <th>hum</th>
+      <th>windspeed</th>
+      <th>cnt</th>
+      <th>time_label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3555</th>
+      <td>2</td>
+      <td>0</td>
+      <td>6</td>
+      <td>1</td>
+      <td>0</td>
+      <td>4</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.72</td>
+      <td>0.38</td>
+      <td>0.1045</td>
+      <td>15</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>16834</th>
+      <td>4</td>
+      <td>1</td>
+      <td>12</td>
+      <td>5</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.40</td>
+      <td>0.87</td>
+      <td>0.1045</td>
+      <td>8</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>6971</th>
+      <td>4</td>
+      <td>0</td>
+      <td>10</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.34</td>
+      <td>0.87</td>
+      <td>0.0896</td>
+      <td>50</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>5165</th>
+      <td>3</td>
+      <td>0</td>
+      <td>8</td>
+      <td>3</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.66</td>
+      <td>0.89</td>
+      <td>0.0000</td>
+      <td>1</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>8913</th>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>6</td>
+      <td>0</td>
+      <td>4</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0.36</td>
+      <td>0.93</td>
+      <td>0.1343</td>
+      <td>89</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
 </div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>season</th>
+      <th>yr</th>
+      <th>mnth</th>
+      <th>hr</th>
+      <th>holiday</th>
+      <th>weekday</th>
+      <th>workingday</th>
+      <th>weathersit</th>
+      <th>temp</th>
+      <th>hum</th>
+      <th>windspeed</th>
+      <th>cnt</th>
+      <th>time_label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>8</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>8</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.24</td>
+      <td>0.75</td>
+      <td>0.0000</td>
+      <td>8</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>14</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.46</td>
+      <td>0.72</td>
+      <td>0.2836</td>
+      <td>106</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>17</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.44</td>
+      <td>0.82</td>
+      <td>0.2836</td>
+      <td>67</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>23</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.46</td>
+      <td>0.88</td>
+      <td>0.2985</td>
+      <td>39</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.44</td>
+      <td>0.94</td>
+      <td>0.2537</td>
+      <td>17</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
 </div>
 
 </div>
@@ -13762,7 +14275,11 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us also compute the probability of winning the second prize, i.e., having 5 matching numbers plus the bonus number:</p>
+<h2 id="Linear-Regression">Linear Regression<a class="anchor-link" href="#Linear-Regression">&#182;</a></h2><p>The first class of models we will use is a linear regression. 
+We shall build four models with a different number of features.</p>
+<h3 id="Two-features">Two features<a class="anchor-link" href="#Two-features">&#182;</a></h3><p>We first build a model with two features only. 
+To select them, let us see which ones are strongly correlated with the target. 
+We take the absolute value of the correlation coefficient to include both positive and negative correlations.</p>
 
 </div>
 </div>
@@ -13772,8 +14289,9 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">proba</span> <span class="o">=</span> <span class="n">proba_prize</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of winning the second prize: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">proba</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;cnt&#39;</span>
+
+<span class="nb">abs</span><span class="p">(</span><span class="n">bike_rentals</span><span class="o">.</span><span class="n">corr</span><span class="p">()[</span><span class="n">target</span><span class="p">])</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13786,13 +14304,28 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 
 <div class="output_area">
 
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[11]:</div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Probability of winning the second prize: 3.78e-07, i.e., approximately one in 2645586
-</pre>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>cnt           1.000000
+temp          0.404772
+hr            0.394071
+time_label    0.378318
+hum           0.322911
+yr            0.250495
+season        0.178056
+weathersit    0.142426
+mnth          0.120638
+windspeed     0.093234
+holiday       0.030927
+workingday    0.030284
+weekday       0.026900
+Name: cnt, dtype: float64</pre>
 </div>
+
 </div>
 
 </div>
@@ -13802,10 +14335,8 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>All these probabilities are rather small. 
-Even the probability of having just two matching numbers, which, under the current rules (as of 12/02/2020) is the lowest possible prize and gives only a free ticket, is just one in six.</p>
-<h2 id="Average-win-(or-loss)">Average win (or loss)<a class="anchor-link" href="#Average-win-(or-loss)">&#182;</a></h2><p>Finally, let us compute the average gain for each play, using data from <a href="https://lotto.bclc.com/lotto-649-and-extra/prizes-and-odds.html">the bclc website</a> (valid on 21 April 2020). 
-We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number of players, the average number of players winning the prize is $N P$. The average gain for each player is thue $(P p) / (N P) = p / N$.</p>
+<p>The four columns showing strongest correlations with the target are <code>temp</code>, <code>hr</code>, <code>time_label</code>, and <code>hum</code>. 
+Let us see how correlated they are with each others:</p>
 
 </div>
 </div>
@@ -13815,25 +14346,114 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 <div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">]</span>
+<span class="n">bike_rentals</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+</pre></div>
 
-<span class="c1"># cost of playing in CAD</span>
-<span class="n">cost_line</span> <span class="o">=</span> <span class="mi">3</span>
+    </div>
+</div>
+</div>
 
-<span class="c1"># prize amount in CAD</span>
-<span class="n">prop_in_play</span> <span class="o">=</span> <span class="mf">0.47</span> <span class="c1"># proportion of sales put in play</span>
+<div class="output_wrapper">
+<div class="output">
 
-<span class="c1"># estimate for the number of players</span>
-<span class="c1"># The result actually does no depend on this number as, in each term in the </span>
-<span class="c1"># sum, it appears both on the numerator and denominator. However, we keep </span>
-<span class="c1"># it for clarity. </span>
-<span class="n">number_players</span> <span class="o">=</span> <span class="mi">3000000</span> 
-<span class="n">pools_fund</span> <span class="o">=</span> <span class="n">number_players</span> <span class="o">*</span> <span class="n">cost_line</span> <span class="o">*</span> <span class="n">prop_in_play</span>
-<span class="n">prize_amount</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.795</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.06</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.095</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">]</span>
 
-<span class="n">average_gain</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">prize_amount</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">number_players</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prize_amount</span><span class="p">))])</span> <span class="o">-</span> <span class="n">cost_line</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Average gain: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">average_gain</span><span class="p">))</span>
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[12]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>temp</th>
+      <th>hr</th>
+      <th>time_label</th>
+      <th>hum</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>temp</th>
+      <td>1.000000</td>
+      <td>0.137603</td>
+      <td>-0.061551</td>
+      <td>-0.069881</td>
+    </tr>
+    <tr>
+      <th>hr</th>
+      <td>0.137603</td>
+      <td>1.000000</td>
+      <td>-0.187486</td>
+      <td>-0.276498</td>
+    </tr>
+    <tr>
+      <th>time_label</th>
+      <td>-0.061551</td>
+      <td>-0.187486</td>
+      <td>1.000000</td>
+      <td>0.144593</td>
+    </tr>
+    <tr>
+      <th>hum</th>
+      <td>-0.069881</td>
+      <td>-0.276498</td>
+      <td>0.144593</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>They do not seem to be strongly correlated with each others.</p>
+<p>Let us train and test a linear regression model:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">]</span>
+
+<span class="n">lr1</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">lr1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">lr1</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
 </pre></div>
 
     </div>
@@ -13850,7 +14470,8 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Average gain: -1.59
+<pre>rmse / std = 0.8360627576110233
+Correlation coefficient: 0.548700907174461
 </pre>
 </div>
 </div>
@@ -13862,20 +14483,29 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>On average, a player will thus lose more than half the price of a ticket. 
-Let us see how much a regular player may lose in 10 years.</p>
+<p>The root mean squared error is about 84% of the test data standard error, and the correlation coefficient between the prediction and actual values is just below 0.55. 
+Our model is thus not very accurate, although it gives a bit more information than random choice.</p>
+<h3 id="Four-features">Four features<a class="anchor-link" href="#Four-features">&#182;</a></h3><p>Let us now try adding the features <code>time_label</code> and <code>hum</code>.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># average gain * (two days a week) * (average number of days in a year)</span>
-<span class="c1"># * (number of years)</span>
-<span class="n">average_gain</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mf">365.2475</span> <span class="o">*</span> <span class="mi">10</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">]</span>
+
+<span class="n">lr2</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">lr2</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">lr2</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
 </pre></div>
 
     </div>
@@ -13888,13 +14518,481 @@ Let us see how much a regular player may lose in 10 years.</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[13]:</div>
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.7679587887826516
+Correlation coefficient: 0.6404048748629122
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This model is a little bit more accurate than the previous one.</p>
+<h3 id="Six-features">Six features<a class="anchor-link" href="#Six-features">&#182;</a></h3><p>Let us add the <code>yr</code> and <code>season</code> columns:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">,</span> <span class="s1">&#39;yr&#39;</span><span class="p">,</span> <span class="s1">&#39;season&#39;</span><span class="p">]</span>
+
+<span class="n">lr4</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">lr4</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">lr4</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.7300569849225247
+Correlation coefficient: 0.683378384192659
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This model performs a bit better than the previous one.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="All-features">All features<a class="anchor-link" href="#All-features">&#182;</a></h3><p>Let us now use all features:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">,</span> <span class="s1">&#39;yr&#39;</span><span class="p">,</span> <span class="s1">&#39;season&#39;</span><span class="p">,</span> <span class="s1">&#39;weathersit&#39;</span><span class="p">,</span> <span class="s1">&#39;mnth&#39;</span><span class="p">,</span> <span class="s1">&#39;windspeed&#39;</span><span class="p">,</span> <span class="s1">&#39;holiday&#39;</span><span class="p">,</span> <span class="s1">&#39;workingday&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday&#39;</span><span class="p">]</span>
+
+<span class="n">lr4</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">lr4</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">lr4</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.7285471221750136
+Correlation coefficient: 0.6850000447693583
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This model performs slightly better than the previous ones. 
+It thus seems that adding more features improves the ccuracy of the model, although the rms error remains fairly large (nearly 73% of the test dataset standard deviation).</p>
+<h2 id="Decision-tree">Decision tree<a class="anchor-link" href="#Decision-tree">&#182;</a></h2><p>Let us now train a decision tree on the same data, with the same features as above.</p>
+<h3 id="Two-features">Two features<a class="anchor-link" href="#Two-features">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">]</span>
+
+<span class="n">dt1</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+<span class="n">dt1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">dt1</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.6050216411159434
+Correlation coefficient: 0.7969085584906862
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The rms error is close to 61% of the test data standard deviation.
+This is already better than all the linear regression models we tried.</p>
+<h3 id="Four-features">Four features<a class="anchor-link" href="#Four-features">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">]</span>
+
+<span class="n">dt2</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+<span class="n">dt2</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">dt2</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.7303020163510076
+Correlation coefficient: 0.7275263459007905
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Results are slightly worse than those obtained with two features only.</p>
+<h3 id="Six-features">Six features<a class="anchor-link" href="#Six-features">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">,</span> <span class="s1">&#39;yr&#39;</span><span class="p">,</span> <span class="s1">&#39;season&#39;</span><span class="p">]</span>
+
+<span class="n">dt3</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+<span class="n">dt3</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">dt3</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.62801158982347
+Correlation coefficient: 0.8031774189957126
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>These results are close to those obtained with two features, and better than those obtained with four.</p>
+<h3 id="All-features">All features<a class="anchor-link" href="#All-features">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">,</span> <span class="s1">&#39;yr&#39;</span><span class="p">,</span> <span class="s1">&#39;season&#39;</span><span class="p">,</span> <span class="s1">&#39;weathersit&#39;</span><span class="p">,</span> <span class="s1">&#39;mnth&#39;</span><span class="p">,</span> <span class="s1">&#39;windspeed&#39;</span><span class="p">,</span> <span class="s1">&#39;holiday&#39;</span><span class="p">,</span> <span class="s1">&#39;workingday&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday&#39;</span><span class="p">]</span>
+
+<span class="n">dt4</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">()</span>
+<span class="n">dt4</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">dt4</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.31896540432398257
+Correlation coefficient: 0.948927629897152
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>A classification tree trained with all features gives significantly better results than other decision trees as well as the linear models. 
+The correlation coefficient between the predictions and actual values in the validation set is close to 0.95, and the root mean squared error is close to 31% of the standard deviation.</p>
+<p>Let us see if we can improve the results by changing the <code>min_samples_leaf</code> and <code>max_depth</code> parameters.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">list_max_depth</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">168</span><span class="p">,</span> <span class="mi">504</span><span class="p">]</span>
+<span class="n">list_min_samples_leaf</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">81</span><span class="p">,</span> <span class="mi">243</span><span class="p">]</span>
+<span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">max_depth</span> <span class="ow">in</span> <span class="n">list_max_depth</span><span class="p">:</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+    <span class="k">for</span> <span class="n">min_samples_leaf</span> <span class="ow">in</span> <span class="n">list_min_samples_leaf</span><span class="p">:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span> <span class="o">=</span> <span class="n">max_depth</span><span class="p">,</span> <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="n">min_samples_leaf</span><span class="p">)</span>
+        <span class="n">dt</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+        <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+        <span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="n">res</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">)</span>
+        
+<span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">list_min_samples_leaf</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">list_max_depth</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1</th>
+      <th>3</th>
+      <th>9</th>
+      <th>27</th>
+      <th>81</th>
+      <th>243</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2</th>
+      <td>0.763632</td>
+      <td>0.763632</td>
+      <td>0.763632</td>
+      <td>0.763632</td>
+      <td>0.763632</td>
+      <td>0.763632</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0.544955</td>
+      <td>0.544952</td>
+      <td>0.544947</td>
+      <td>0.544936</td>
+      <td>0.548840</td>
+      <td>0.557716</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>0.318216</td>
+      <td>0.301114</td>
+      <td>0.301210</td>
+      <td>0.321996</td>
+      <td>0.388717</td>
+      <td>0.528185</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>0.314620</td>
+      <td>0.300170</td>
+      <td>0.301220</td>
+      <td>0.321996</td>
+      <td>0.388717</td>
+      <td>0.528185</td>
+    </tr>
+    <tr>
+      <th>168</th>
+      <td>0.316222</td>
+      <td>0.298586</td>
+      <td>0.301098</td>
+      <td>0.321996</td>
+      <td>0.388717</td>
+      <td>0.528185</td>
+    </tr>
+    <tr>
+      <th>504</th>
+      <td>0.314283</td>
+      <td>0.301666</td>
+      <td>0.301044</td>
+      <td>0.321996</td>
+      <td>0.388717</td>
+      <td>0.528185</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
 
 
 
 
-<div class="output_text output_subarea output_execute_result">
-<pre>-1659.2609529000001</pre>
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
 </div>
 
 </div>
@@ -13906,10 +15004,533 @@ Let us see how much a regular player may lose in 10 years.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>A player playing twice a week for 10 years will, on average, lose more than CAD 1650.</p>
+<p>The best parameters have a low value for <code>min_samples_leaf</code> and a relatively high value for <code>max_depth</code>. 
+The performance is then close to the default one.</p>
+<h2 id="Random-forest">Random forest<a class="anchor-link" href="#Random-forest">&#182;</a></h2><p>Finally, let us train a random forest classifier.</p>
+<h3 id="Two-features">Two features<a class="anchor-link" href="#Two-features">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">]</span>
+
+<span class="n">rf1</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">()</span>
+<span class="n">rf1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">rf1</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.6048721064378897
+Correlation coefficient: 0.7970294359550671
+</pre>
+</div>
+</div>
 
 </div>
 </div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Results are close to those obtained with a single tree.</p>
+<h3 id="Four-features">Four features<a class="anchor-link" href="#Four-features">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">]</span>
+
+<span class="n">rf2</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">()</span>
+<span class="n">rf2</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">rf2</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.6343036266566795
+Correlation coefficient: 0.7832772813033813
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Results are slightly better than those obtained with two features.</p>
+<h3 id="Six-features">Six features<a class="anchor-link" href="#Six-features">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">,</span> <span class="s1">&#39;yr&#39;</span><span class="p">,</span> <span class="s1">&#39;season&#39;</span><span class="p">]</span>
+
+<span class="n">rf3</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">()</span>
+<span class="n">rf3</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">dt3</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.62801158982347
+Correlation coefficient: 0.8031774189957126
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>These results are close to those obtained with four features.</p>
+<h3 id="All-features">All features<a class="anchor-link" href="#All-features">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">,</span> <span class="s1">&#39;yr&#39;</span><span class="p">,</span> <span class="s1">&#39;season&#39;</span><span class="p">,</span> <span class="s1">&#39;weathersit&#39;</span><span class="p">,</span> <span class="s1">&#39;mnth&#39;</span><span class="p">,</span> <span class="s1">&#39;windspeed&#39;</span><span class="p">,</span> <span class="s1">&#39;holiday&#39;</span><span class="p">,</span> <span class="s1">&#39;workingday&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday&#39;</span><span class="p">]</span>
+
+<span class="n">rf4</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">()</span>
+<span class="n">rf4</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">rf4</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.23438612897971417
+Correlation coefficient: 0.9721501434543571
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>A random forest trained with all features achives even better results than a single decision tree: the correlation coefficient is above 0.97 and the rms error close to 23% of the test data standard deviation.</p>
+<p>As done above, let us try to vary the parameters <code>max_depth</code> and <code>min_sample_leaf</code>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">list_max_depth</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">168</span><span class="p">,</span> <span class="mi">504</span><span class="p">]</span>
+<span class="n">list_min_samples_leaf</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">81</span><span class="p">,</span> <span class="mi">243</span><span class="p">]</span>
+<span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">max_depth</span> <span class="ow">in</span> <span class="n">list_max_depth</span><span class="p">:</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+    <span class="k">for</span> <span class="n">min_samples_leaf</span> <span class="ow">in</span> <span class="n">list_min_samples_leaf</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">max_depth</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">min_samples_leaf</span><span class="p">),</span> <span class="n">end</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">max_depth</span> <span class="o">=</span> <span class="n">max_depth</span><span class="p">,</span> <span class="n">min_samples_leaf</span> <span class="o">=</span> <span class="n">min_samples_leaf</span><span class="p">)</span>
+        <span class="n">rf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+        <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+        <span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+        <span class="n">res</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+        
+<span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">list_min_samples_leaf</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">list_max_depth</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>504	243                                                                                             
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>1</th>
+      <th>3</th>
+      <th>9</th>
+      <th>27</th>
+      <th>81</th>
+      <th>243</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2</th>
+      <td>0.760384</td>
+      <td>0.760043</td>
+      <td>0.760080</td>
+      <td>0.761329</td>
+      <td>0.759391</td>
+      <td>0.761025</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>0.528995</td>
+      <td>0.529317</td>
+      <td>0.531531</td>
+      <td>0.526524</td>
+      <td>0.534082</td>
+      <td>0.567362</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>0.234533</td>
+      <td>0.239009</td>
+      <td>0.260602</td>
+      <td>0.309064</td>
+      <td>0.423941</td>
+      <td>0.561017</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>0.234662</td>
+      <td>0.237785</td>
+      <td>0.259493</td>
+      <td>0.310607</td>
+      <td>0.427527</td>
+      <td>0.559401</td>
+    </tr>
+    <tr>
+      <th>168</th>
+      <td>0.235778</td>
+      <td>0.238631</td>
+      <td>0.261630</td>
+      <td>0.310110</td>
+      <td>0.423583</td>
+      <td>0.557851</td>
+    </tr>
+    <tr>
+      <th>504</th>
+      <td>0.234176</td>
+      <td>0.239923</td>
+      <td>0.261022</td>
+      <td>0.309987</td>
+      <td>0.422621</td>
+      <td>0.555620</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The best parameters have a low value for <code>min_samples_leaf</code> and a relatively high value for <code>max_depth</code>. 
+The performance is then close to the default one.</p>
+<p>Let us also try to change the number of estimators:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">list_n_estimators</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">900</span><span class="p">]</span>
+<span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">n_estimators</span> <span class="ow">in</span> <span class="n">list_n_estimators</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">n_estimators</span><span class="p">),</span> <span class="n">end</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="n">n_estimators</span><span class="p">)</span>
+    <span class="n">rf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+    <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+    <span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">list_n_estimators</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;number of estimators&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;relative rmse&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>900                                                                                                 
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The error seems to decrease with the number of estimators increases, before becoming nearly constant when there are more than 100 of them.</p>
+<p>Let us compute the error and correlation coefficient with 300 estimators:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;temp&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;time_label&#39;</span><span class="p">,</span> <span class="s1">&#39;hum&#39;</span><span class="p">,</span> <span class="s1">&#39;yr&#39;</span><span class="p">,</span> <span class="s1">&#39;season&#39;</span><span class="p">,</span> <span class="s1">&#39;weathersit&#39;</span><span class="p">,</span> <span class="s1">&#39;mnth&#39;</span><span class="p">,</span> <span class="s1">&#39;windspeed&#39;</span><span class="p">,</span> <span class="s1">&#39;holiday&#39;</span><span class="p">,</span> <span class="s1">&#39;workingday&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday&#39;</span><span class="p">]</span>
+
+<span class="n">rf5</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">300</span><span class="p">)</span>
+<span class="n">rf5</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">features</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="n">target</span><span class="p">])</span>
+
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">rf5</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">features</span><span class="p">])</span>
+<span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]))</span>
+<span class="n">relat_rmse</span> <span class="o">=</span> <span class="n">rmse</span> <span class="o">/</span> <span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;rmse / std = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">relat_rmse</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Correlation coefficient: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predictions</span><span class="p">))))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>rmse / std = 0.2335215425501353
+Correlation coefficient: 0.9723622218610845
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>These results are similar to those obtained with the default value (100).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Conclusions">Conclusions<a class="anchor-link" href="#Conclusions">&#182;</a></h2><p>In this project, we trained a few simple machine learning models to predict the number of bikes rented per hour depending on weather conditions, the date, and the time of day. 
+We found that <strong>a random forest performs significantly better than a linear regressor and slightly better than a single decision tree</strong>. 
+This is especialy true when using all the features to train the model. 
+We found the minimum error is obtained with 100 or more estimators. 
+The root mean squared error is then smaller than 25% of the validation data's standard deviation, and the correlation coefficient between the prediction and data is higher than 97%.</p>
+<p>To go further, it would be interesting to see how these models generalize to other datasets, <em>e.g.</em> to data from later years or different cities.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
     </div>
   </div>

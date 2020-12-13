@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>6_49_lottery_probabilities</title>
+<title>Jeopardy_questions</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13077,22 +13077,23 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Winning-probabilities-at-the-6/49-lottery-game">Winning probabilities at the 6/49 lottery game<a class="anchor-link" href="#Winning-probabilities-at-the-6/49-lottery-game">&#182;</a></h1><p>Lotto 6/49, launched on June 12, 1982, was the first Canadian Lottery game to allow players to choose their own numbers. 
-Winning numbers are drawn every Wednesday and Saturday by the Interprovincial Lottery Corporation. 
-Each time, 6 numbers are drawn wthout replacement from a set of 49, plus a bonus number. 
-A player wins money if at least two of the first six are among the numbers they chose. 
-To win the hoghest amount, called the ‘jackpot prize’, a player must have the first six correct numbers.</p>
-<p>Although most people start playing the lottery for fun, it can also turn into an addiction or some players, with potentially disastrous consequences. 
-One important factor in the development of such addictions is the communication centred on the large amount of money the jackpot prize represents and on the change of life it can entail. 
-This focus on a technically possible but unlikely outcome can overshadow how small its probability is, or, more prosaically, that a player is unlikely to win anything at all.</p>
-<p>In this short project, I will estimate some winning likelihoods, in the hope that realizing their smallness may help prevent addiction. 
-I shall mostly use basic Python, in an effort to make the code as transparent as possible, and since the relatively small numbers involved do not require a lot of computing power. 
-I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the functions defined here on very large integers.</p>
-<h2 id="Basic-combinatorial-functions">Basic combinatorial functions<a class="anchor-link" href="#Basic-combinatorial-functions">&#182;</a></h2><p>Let us first define two functions:</p>
+<h1 id="Patterns-of-Jeopardy!-questions-(Work-in-progress)">Patterns of Jeopardy! questions <font style="color:rgb(0,100,200)"><i>(Work in progress)</i></font><a class="anchor-link" href="#Patterns-of-Jeopardy!-questions-(Work-in-progress)">&#182;</a></h1><p>Jeopardy! is a popular American televised quizz competition. 
+It has now aired more than 8000 episodes, was adapted in many other countries, and was ranked in 2013 among the 60 greatest shows in American television history by <a href="https://www.tvguidemagazine.com/">TV Guide</a>.
+More information can be found on <a href="https://en.wikipedia.org/wiki/Jeopardy!">this wikipedia page</a>. 
+In this project, we will study a set of questions and answers which appeared in the show and try to find patterns which may help a candidate prepare for the game.</p>
+<h2 id="Data-Cleaning">Data Cleaning<a class="anchor-link" href="#Data-Cleaning">&#182;</a></h2><p>The dataset, <code>JEOPARDY_CSV.csv</code>, can be found on <a href="https://www.reddit.com/r/datasets/comments/1uyd0t/200000_jeopardy_questions_in_a_json_file/">this reddit thread</a>. 
+It contains 216,930 jeopardy questions and answers among the 252,583 which had been asked at the time of posting. 
+Its columns are:</p>
 <ul>
-<li><code>factorial</code>, taking a non-negative integer $n$ and returning $n!$, </li>
-<li><code>combination</code>, taking two non-negative integers $n$ and $k$ and returning ${n\choose k}$.</li>
+<li><code>category</code>: the question category, </li>
+<li><code>value</code>: the amount of money the question is worth (“None” for Final Jeopardy! and Tiebreaker questions),</li>
+<li><code>question</code>: text of the question,</li>
+<li><code>answer</code>: text of the answer,</li>
+<li><code>round</code>: the round of Jeopardy that the question was asked in: “Jeopardy!”, “Double Jeopardy!”, “Final Jeopardy!”, or “Tiebreaker”,</li>
+<li><code>show_number</code> : the episode number the question was asked in,</li>
+<li><code>air_date</code>: the show air date in format YYYY-MM-DD.</li>
 </ul>
+<p>Let us first import the modules we will need:</p>
 
 </div>
 </div>
@@ -13102,25 +13103,9 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the factorial of n </span>
-<span class="sd">    n: non-negative integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">*=</span> <span class="n">i</span>
-    <span class="k">return</span> <span class="n">res</span>
-
-<span class="k">def</span> <span class="nf">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the number of combinations of k elements among n</span>
-<span class="sd">    n and k: non-negative integers </span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">factorial</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 
     </div>
@@ -13131,8 +13116,7 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us also define the function <code>approximate_fraction_num</code> taking a float and returning a fraction close to it. 
-It takes an optional parameter <code>max_num</code>, equal to 10 by default, representing the maximum acceptable value for the numerator.</p>
+<p>We then read the dataset in the dataframe <code>jeopardy</code> and print its first five rows:</p>
 
 </div>
 </div>
@@ -13142,52 +13126,110 @@ It takes an optional parameter <code>max_num</code>, equal to 10 by default, rep
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the greatest common divisor to a and b</span>
-<span class="sd">    a: positive integer</span>
-<span class="sd">    b: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">a_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="n">b_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">a_</span>
-    <span class="n">r_</span> <span class="o">=</span> <span class="n">a_</span> <span class="o">%</span> <span class="n">b_</span>
-    <span class="k">while</span><span class="p">(</span><span class="n">r_</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">a_</span> <span class="o">=</span> <span class="n">b_</span>
-        <span class="n">b_</span> <span class="o">=</span> <span class="n">r_</span>
-        <span class="n">r_</span> <span class="o">=</span> <span class="n">a_</span> <span class="o">%</span> <span class="n">b_</span>
-    <span class="k">return</span> <span class="n">b_</span>
-
-<span class="k">def</span> <span class="nf">approximate_fraction</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">max_den</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the numerator and denominator of a fraction approximating f, with </span>
-<span class="sd">    a maximum denominator max_den</span>
-<span class="sd">    f: float</span>
-<span class="sd">    max_den: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="n">max_den</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_den</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span> 
-        <span class="n">num</span> <span class="o">+=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">))</span><span class="o">*</span><span class="mi">1</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">gcd</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">max_den</span><span class="p">)</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
-    <span class="n">den</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_den</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">den</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">approximate_fraction_num</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">max_num</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the numerator and denominator of a fraction approximating f, with </span>
-<span class="sd">    a maximum numerator max_num</span>
-<span class="sd">    f: float</span>
-<span class="sd">    max_num: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">frac_inv</span> <span class="o">=</span> <span class="n">approximate_fraction</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">f</span><span class="p">,</span> <span class="n">max_den</span> <span class="o">=</span> <span class="n">max_num</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">frac_inv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">frac_inv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../Data/JEOPARDY_CSV.csv&#39;</span><span class="p">)</span>
+<span class="n">jeopardy</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[2]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Show Number</th>
+      <th>Air Date</th>
+      <th>Round</th>
+      <th>Category</th>
+      <th>Value</th>
+      <th>Question</th>
+      <th>Answer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>4680</td>
+      <td>2004-12-31</td>
+      <td>Jeopardy!</td>
+      <td>HISTORY</td>
+      <td>$200</td>
+      <td>For the last 8 years of his life, Galileo was ...</td>
+      <td>Copernicus</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>4680</td>
+      <td>2004-12-31</td>
+      <td>Jeopardy!</td>
+      <td>ESPN's TOP 10 ALL-TIME ATHLETES</td>
+      <td>$200</td>
+      <td>No. 2: 1912 Olympian; football star at Carlisl...</td>
+      <td>Jim Thorpe</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4680</td>
+      <td>2004-12-31</td>
+      <td>Jeopardy!</td>
+      <td>EVERYBODY TALKS ABOUT IT...</td>
+      <td>$200</td>
+      <td>The city of Yuma in this state has a record av...</td>
+      <td>Arizona</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4680</td>
+      <td>2004-12-31</td>
+      <td>Jeopardy!</td>
+      <td>THE COMPANY LINE</td>
+      <td>$200</td>
+      <td>In 1963, live on "The Art Linkletter Show", th...</td>
+      <td>McDonald's</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4680</td>
+      <td>2004-12-31</td>
+      <td>Jeopardy!</td>
+      <td>EPITAPHS &amp; TRIBUTES</td>
+      <td>$200</td>
+      <td>Signer of the Dec. of Indep., framer of the Co...</td>
+      <td>John Adams</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13195,10 +13237,7 @@ It takes an optional parameter <code>max_num</code>, equal to 10 by default, rep
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Some-winning-probabilities">Some winning probabilities<a class="anchor-link" href="#Some-winning-probabilities">&#182;</a></h2><h3 id="Winning-the-jackpot-prize-in-one-try">Winning the jackpot prize in one try<a class="anchor-link" href="#Winning-the-jackpot-prize-in-one-try">&#182;</a></h3><p>Let $n$ be the number of elements in the set and $k$ be the number of elements drawn (in the case of the 6/49 game, they are respectively 49 and 6). 
-The probability $P_1(J)$ of winning the jackpot prize by playing once (<em>i.e.</em>, choosing a set of six numbers) is: 
-$$ P_1(J) = {n \choose k}^{-1} .$$
-Let us compute this number for $n = 49$ and $k = 6$:</p>
+<p>Let us check the column names:</p>
 
 </div>
 </div>
@@ -13208,11 +13247,7 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
-<span class="n">P_1_J</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-<span class="n">frac</span> <span class="o">=</span> <span class="n">approximate_fraction_num</span><span class="p">(</span><span class="n">P_1_J</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Winning probability: </span><span class="si">{:.1e}</span><span class="s1">, i.e., </span><span class="si">{:.7f}</span><span class="s1">, or </span><span class="si">{}</span><span class="s1"> over </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P_1_J</span><span class="p">,</span> <span class="n">P_1_J</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frac</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="o">.</span><span class="n">columns</span>
 </pre></div>
 
     </div>
@@ -13225,13 +13260,17 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 
 <div class="output_area">
 
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[3]:</div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Winning probability: 7.2e-08, i.e., 0.0000072, or 1 over 13983816
-</pre>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Index([&#39;Show Number&#39;, &#39; Air Date&#39;, &#39; Round&#39;, &#39; Category&#39;, &#39; Value&#39;,
+       &#39; Question&#39;, &#39; Answer&#39;],
+      dtype=&#39;object&#39;)</pre>
 </div>
+
 </div>
 
 </div>
@@ -13241,9 +13280,8 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The probability of winning the jackpot prize is smaller than one over ten millions, which is rather small.</p>
-<h3 id="Would-I-have-won?">Would I have won?<a class="anchor-link" href="#Would-I-have-won?">&#182;</a></h3><p>To get more intuition about how small this number is, we want to write a function taking a six-numbers input and telling if, assuming this set was played many times, it would have won the jackpot prize at least once. 
-To this end, we first load the dataset <code>649.csv</code>, containing results from previous draws.</p>
+<p>Some of them have a leading space. 
+Let us get rid of it:</p>
 
 </div>
 </div>
@@ -13253,11 +13291,16 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../Data/649.csv&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">delete_leading_spaces</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns the string s stripped of leading spaces</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">while</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">return</span> <span class="n">s</span>
+
+<span class="n">jeopardy</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">delete_leading_spaces</span><span class="p">,</span> <span class="n">jeopardy</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="n">jeopardy</span><span class="o">.</span><span class="n">columns</span>
 </pre></div>
 
     </div>
@@ -13270,243 +13313,15 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 
 <div class="output_area">
 
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>(3665, 11)
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[4]:</div>
 
 
 
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PRODUCT</th>
-      <th>DRAW NUMBER</th>
-      <th>SEQUENCE NUMBER</th>
-      <th>DRAW DATE</th>
-      <th>NUMBER DRAWN 1</th>
-      <th>NUMBER DRAWN 2</th>
-      <th>NUMBER DRAWN 3</th>
-      <th>NUMBER DRAWN 4</th>
-      <th>NUMBER DRAWN 5</th>
-      <th>NUMBER DRAWN 6</th>
-      <th>BONUS NUMBER</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>649</td>
-      <td>1</td>
-      <td>0</td>
-      <td>6/12/1982</td>
-      <td>3</td>
-      <td>11</td>
-      <td>12</td>
-      <td>14</td>
-      <td>41</td>
-      <td>43</td>
-      <td>13</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>649</td>
-      <td>2</td>
-      <td>0</td>
-      <td>6/19/1982</td>
-      <td>8</td>
-      <td>33</td>
-      <td>36</td>
-      <td>37</td>
-      <td>39</td>
-      <td>41</td>
-      <td>9</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>649</td>
-      <td>3</td>
-      <td>0</td>
-      <td>6/26/1982</td>
-      <td>1</td>
-      <td>6</td>
-      <td>23</td>
-      <td>24</td>
-      <td>27</td>
-      <td>39</td>
-      <td>34</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>649</td>
-      <td>4</td>
-      <td>0</td>
-      <td>7/3/1982</td>
-      <td>3</td>
-      <td>9</td>
-      <td>10</td>
-      <td>13</td>
-      <td>20</td>
-      <td>43</td>
-      <td>34</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>649</td>
-      <td>5</td>
-      <td>0</td>
-      <td>7/10/1982</td>
-      <td>5</td>
-      <td>14</td>
-      <td>21</td>
-      <td>31</td>
-      <td>34</td>
-      <td>47</td>
-      <td>45</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PRODUCT</th>
-      <th>DRAW NUMBER</th>
-      <th>SEQUENCE NUMBER</th>
-      <th>DRAW DATE</th>
-      <th>NUMBER DRAWN 1</th>
-      <th>NUMBER DRAWN 2</th>
-      <th>NUMBER DRAWN 3</th>
-      <th>NUMBER DRAWN 4</th>
-      <th>NUMBER DRAWN 5</th>
-      <th>NUMBER DRAWN 6</th>
-      <th>BONUS NUMBER</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>3660</th>
-      <td>649</td>
-      <td>3587</td>
-      <td>0</td>
-      <td>6/6/2018</td>
-      <td>10</td>
-      <td>15</td>
-      <td>23</td>
-      <td>38</td>
-      <td>40</td>
-      <td>41</td>
-      <td>35</td>
-    </tr>
-    <tr>
-      <th>3661</th>
-      <td>649</td>
-      <td>3588</td>
-      <td>0</td>
-      <td>6/9/2018</td>
-      <td>19</td>
-      <td>25</td>
-      <td>31</td>
-      <td>36</td>
-      <td>46</td>
-      <td>47</td>
-      <td>26</td>
-    </tr>
-    <tr>
-      <th>3662</th>
-      <td>649</td>
-      <td>3589</td>
-      <td>0</td>
-      <td>6/13/2018</td>
-      <td>6</td>
-      <td>22</td>
-      <td>24</td>
-      <td>31</td>
-      <td>32</td>
-      <td>34</td>
-      <td>16</td>
-    </tr>
-    <tr>
-      <th>3663</th>
-      <td>649</td>
-      <td>3590</td>
-      <td>0</td>
-      <td>6/16/2018</td>
-      <td>2</td>
-      <td>15</td>
-      <td>21</td>
-      <td>31</td>
-      <td>38</td>
-      <td>49</td>
-      <td>8</td>
-    </tr>
-    <tr>
-      <th>3664</th>
-      <td>649</td>
-      <td>3591</td>
-      <td>0</td>
-      <td>6/20/2018</td>
-      <td>14</td>
-      <td>24</td>
-      <td>31</td>
-      <td>35</td>
-      <td>37</td>
-      <td>48</td>
-      <td>17</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+<div class="output_text output_subarea output_execute_result">
+<pre>Index([&#39;Show Number&#39;, &#39;Air Date&#39;, &#39;Round&#39;, &#39;Category&#39;, &#39;Value&#39;, &#39;Question&#39;,
+       &#39;Answer&#39;],
+      dtype=&#39;object&#39;)</pre>
 </div>
 
 </div>
@@ -13518,9 +13333,7 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This dataset contains results from all drawings that occurred before 21st June 2018. 
-Let us use it to build the list <code>drawings_6</code> of all drawings, excluding the bonus number. 
-We cast them as sets since the order is not important.</p>
+<p>Let us now check for missing values:</p>
 
 </div>
 </div>
@@ -13530,11 +13343,37 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;drawing_6&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;NUMBER DRAWN &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">7</span><span class="p">)]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-<span class="n">drawing_6</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;drawing_6&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">set</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[5]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Show Number    0
+Air Date       0
+Round          0
+Category       0
+Value          0
+Question       0
+Answer         2
+dtype: int64</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13542,7 +13381,8 @@ We cast them as sets since the order is not important.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We now define the function <code>has_aready_won</code> taking a six-numbers list or set and returning <code>True</code> if it has been drawn at least once and <code>False</code> otherwise (technically, it returns whether it has been drawn before June 21st 2018; but this only make a difference for a small number of sets):</p>
+<p>There are two missing values in the <code>Answer</code> column. 
+Let us see where they are:</p>
 
 </div>
 </div>
@@ -13552,11 +13392,79 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">has_already_won</span><span class="p">(</span><span class="n">numbers</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span> <span class="ow">in</span> <span class="n">drawing_6</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="p">[</span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Answer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()]</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Show Number</th>
+      <th>Air Date</th>
+      <th>Round</th>
+      <th>Category</th>
+      <th>Value</th>
+      <th>Question</th>
+      <th>Answer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>94817</th>
+      <td>4346</td>
+      <td>2003-06-23</td>
+      <td>Jeopardy!</td>
+      <td>GOING "N"SANE</td>
+      <td>$200</td>
+      <td>It often precedes "and void"</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>143297</th>
+      <td>6177</td>
+      <td>2011-06-21</td>
+      <td>Double Jeopardy!</td>
+      <td>NOTHING</td>
+      <td>$400</td>
+      <td>This word for "nothing" precedes "and void" to...</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13564,7 +13472,8 @@ We cast them as sets since the order is not important.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us test it on two examples: one which was drawn and one which was not.</p>
+<p>The Answer to these two questions is “Null”, which seems to have confused Pandas when importaing the file. 
+Let us correct this error:</p>
 
 </div>
 </div>
@@ -13574,8 +13483,8 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">has_already_won</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">41</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">has_already_won</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">41</span><span class="p">]))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;Null&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">jeopardy</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13588,14 +13497,22 @@ We cast them as sets since the order is not important.</p>
 
 <div class="output_area">
 
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[7]:</div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>True
-False
-</pre>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Show Number    0
+Air Date       0
+Round          0
+Category       0
+Value          0
+Question       0
+Answer         0
+dtype: int64</pre>
 </div>
+
 </div>
 
 </div>
@@ -13605,7 +13522,7 @@ False
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us now do a small experiment: we select a large number (say, 10000) of (not necessarily different) sets of six numbers at random, and count how much of them have been drawn at least once:</p>
+<p>We now convert the <code>Show Number</code> and <code>Value</code> column to integers:</p>
 
 </div>
 </div>
@@ -13615,71 +13532,19 @@ False
 <div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">choice</span><span class="p">,</span> <span class="n">seed</span>
-
-<span class="n">n_sets</span> <span class="o">=</span> <span class="mi">10000</span>
-
-<span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix the seed to get the same result each time the code is run</span>
-<span class="n">n_has_won</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sets</span><span class="p">):</span> 
-    <span class="n">test_set</span> <span class="o">=</span> <span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">has_already_won</span><span class="p">(</span><span class="n">test_set</span><span class="p">):</span> 
-        <span class="n">n_has_won</span> <span class="o">+=</span> <span class="mi">1</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Among the </span><span class="si">{}</span><span class="s1"> sets, </span><span class="si">{}</span><span class="s1"> have been drawn at least once&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_has_won</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Show Number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Show Number&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;$&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;None&#39;</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Among the 10000 sets, 2 have been drawn at least once
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Only 2 sets among the 1000 have been drawn at least once. 
-The probability for a given set to be drawn one specific day is thus quite small!</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Winning-the-jackpot-price-with-several-tickets">Winning the jackpot price with several tickets<a class="anchor-link" href="#Winning-the-jackpot-price-with-several-tickets">&#182;</a></h3><p>Assuming we play $l$ different valid tickets, where $l$ is a positive integer, the probability $P_l(J)$ to win the jackpot prize is:
-$$P_l(J) = l \times P_1(J).$$
-From the above results, having a probability of just 1 in 10 of winning would require playing more than one million sets of numbers. 
-At the time of writing (21 April 2020), the cost of playing six numbers is CAD3. 
-Having a probability to win the jackpot prize of more than one half requires buying more than 5,000,000 of them, for a total cost of CAD15,000,000. 
-Since the jackpot prize is only CAD6,000,000 at the moment, this would incur a large loss of money even if winning.</p>
-<h3 id="Having-a-few-matching-numbers">Having a few matching numbers<a class="anchor-link" href="#Having-a-few-matching-numbers">&#182;</a></h3><p>We now focus on smaller prizes. 
-The function <code>proba_prize</code> below takes 4 inputs:</p>
-<ul>
-<li>n (positive integer): the number of elements in the set, </li>
-<li>k (positive integer): the number of elements to be chosen by the player, </li>
-<li>l (positive integer): the number of elements that need to match for a given prize, excluding the bonus number, </li>
-<li>b (boolean): whether the bonus number needs to match</li>
-</ul>
-<p>It returns the probability of winning the price when playing once. 
-All inputs defaut to the jackpot prize setup.</p>
+<p>Finally, let us convert the <code>Air Date</code> column to datetime format:</p>
 
 </div>
 </div>
@@ -13689,20 +13554,7 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">proba_prize</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">49</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">proba_l_numbers</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="c1"># compute the probability that at least l numbers match</span>
-    <span class="k">for</span> <span class="n">l_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="c1"># probability that exactly l_ elements match</span>
-        <span class="c1"># for each choice of l_ elements among the k, the number of draws where </span>
-        <span class="c1"># they match while the k-l_ others don&#39;t match is equal to the number of</span>
-        <span class="c1"># ways of choosing k-l_ elements among n-k</span>
-        <span class="n">proba_l_numbers</span> <span class="o">+=</span> <span class="n">combination</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">l_</span><span class="p">)</span> <span class="o">*</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="o">-</span><span class="n">l_</span><span class="p">)</span> <span class="o">/</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b</span><span class="p">:</span>
-        <span class="c1"># if the bonus number needs to match</span>
-        <span class="k">return</span> <span class="n">proba_l_numbers</span> <span class="o">/</span> <span class="n">n</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">proba_l_numbers</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Air Date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Air Date&#39;</span><span class="p">],</span> <span class="nb">format</span> <span class="o">=</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13713,7 +13565,7 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us apply this function to $l \in \lbrace 2, 3, 4, 5, 6 \rbrace$:</p>
+<p>We can use this to see in which year the questions present in the dataset were asked.</p>
 
 </div>
 </div>
@@ -13723,13 +13575,11 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
-    <span class="n">proba</span> <span class="o">=</span> <span class="n">proba_prize</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
-    <span class="n">frac</span> <span class="o">=</span> <span class="n">approximate_fraction_num</span><span class="p">(</span><span class="n">proba</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of having at least </span><span class="si">{}</span><span class="s1"> matching numbers: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">proba</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of having at least </span><span class="si">{}</span><span class="s1"> matching numbers: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately </span><span class="si">{}</span><span class="s1"> in </span><span class="si">{}</span><span class="s1">, or one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">proba</span><span class="p">,</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frac</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Air Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;year&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;number of questions&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13745,14 +13595,14 @@ All inputs defaut to the jackpot prize setup.</p>
     <div class="prompt"></div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Probability of having at least 2 matching numbers: 1.51e-01, i.e., approximately 5 in 33, or one in 6
-Probability of having at least 3 matching numbers: 1.86e-02, i.e., approximately 10 in 537, or one in 53
-Probability of having at least 4 matching numbers: 9.87e-04, i.e., approximately one in 1013
-Probability of having at least 5 matching numbers: 1.85e-05, i.e., approximately 5 in 269958, or one in 53991
-Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately one in 13983816
-</pre>
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
 </div>
+
 </div>
 
 </div>
@@ -13762,7 +13612,11 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us also compute the probability of winning the second prize, i.e., having 5 matching numbers plus the bonus number:</p>
+<p>Most of the questions present in the dataset were asked between 1997 and 2011, with a few questions asked between 1984 and 1995. 
+It would be interesting to see if the increase in the number of questions in and after 1996 as well as the drop in 2002 can be explained. 
+But this is beyond the scope of the present study.</p>
+<p>The small number of questions for 2012 may be due to the fact that the dataset covers only the beginning of that year. 
+Let us check this:</p>
 
 </div>
 </div>
@@ -13772,8 +13626,7 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">proba</span> <span class="o">=</span> <span class="n">proba_prize</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of winning the second prize: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">proba</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="p">[</span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Air Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span> <span class="o">==</span> <span class="mi">2012</span><span class="p">][</span><span class="s1">&#39;Air Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">month</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13786,13 +13639,16 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 
 <div class="output_area">
 
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[11]:</div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Probability of winning the second prize: 3.78e-07, i.e., approximately one in 2645586
-</pre>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>1    1093
+Name: Air Date, dtype: int64</pre>
 </div>
+
 </div>
 
 </div>
@@ -13802,10 +13658,9 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>All these probabilities are rather small. 
-Even the probability of having just two matching numbers, which, under the current rules (as of 12/02/2020) is the lowest possible prize and gives only a free ticket, is just one in six.</p>
-<h2 id="Average-win-(or-loss)">Average win (or loss)<a class="anchor-link" href="#Average-win-(or-loss)">&#182;</a></h2><p>Finally, let us compute the average gain for each play, using data from <a href="https://lotto.bclc.com/lotto-649-and-extra/prizes-and-odds.html">the bclc website</a> (valid on 21 April 2020). 
-We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number of players, the average number of players winning the prize is $N P$. The average gain for each player is thue $(P p) / (N P) = p / N$.</p>
+<p>The dataset extends only to January 2012. 
+It is thus not surprizing to have only a few questions for that year.</p>
+<p>Let us now normalize the columns <code>Question</code> and <code>Answer</code> by converting them to lowercase and replacing punctuation marks with spaces:</p>
 
 </div>
 </div>
@@ -13815,25 +13670,48 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 <div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Question&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Question&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;\W&#39;</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Answer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Answer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;\W&#39;</span><span class="p">,</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</pre></div>
 
-<span class="c1"># cost of playing in CAD</span>
-<span class="n">cost_line</span> <span class="o">=</span> <span class="mi">3</span>
+    </div>
+</div>
+</div>
 
-<span class="c1"># prize amount in CAD</span>
-<span class="n">prop_in_play</span> <span class="o">=</span> <span class="mf">0.47</span> <span class="c1"># proportion of sales put in play</span>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Data-Analysis">Data Analysis<a class="anchor-link" href="#Data-Analysis">&#182;</a></h2><h3 id="How-often-is-the-answer-in-the-question?">How often is the answer in the question?<a class="anchor-link" href="#How-often-is-the-answer-in-the-question?">&#182;</a></h3><p>One possible tactic to find for the answer to a question is to look at question itself and see if it may contain part of the answer. 
+Let us estimate how frequenctly it may succeed by counting the average fraction of words of the answer which are included in the question, excluding the word “the” which appear commonly in answers but does not change their meaning.</p>
 
-<span class="c1"># estimate for the number of players</span>
-<span class="c1"># The result actually does no depend on this number as, in each term in the </span>
-<span class="c1"># sum, it appears both on the numerator and denominator. However, we keep </span>
-<span class="c1"># it for clarity. </span>
-<span class="n">number_players</span> <span class="o">=</span> <span class="mi">3000000</span> 
-<span class="n">pools_fund</span> <span class="o">=</span> <span class="n">number_players</span> <span class="o">*</span> <span class="n">cost_line</span> <span class="o">*</span> <span class="n">prop_in_play</span>
-<span class="n">prize_amount</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.795</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.06</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.095</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">]</span>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">fraction_answer_in_question</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Returns the fraction of the number of words in the answer which are present in the question</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">words_answer</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Answer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;the&#39;</span> <span class="ow">in</span> <span class="n">words_answer</span><span class="p">:</span>
+        <span class="n">words_answer</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;the&#39;</span><span class="p">)</span>
+    <span class="c1"># if the answer is empty, return 0</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words_answer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> 
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">words_question</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Question&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="n">match_word</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words_answer</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words_question</span><span class="p">:</span>
+            <span class="n">match_word</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">match_word</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">words_answer</span><span class="p">)</span>
 
-<span class="n">average_gain</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">prize_amount</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">number_players</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prize_amount</span><span class="p">))])</span> <span class="o">-</span> <span class="n">cost_line</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Average gain: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">average_gain</span><span class="p">))</span>
+<span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Answer in question&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">fraction_answer_in_question</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fraction of words in answers appearing in questions: </span><span class="si">{:.2f}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Answer in question&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
 </pre></div>
 
     </div>
@@ -13850,7 +13728,7 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Average gain: -1.59
+<pre>Fraction of words in answers appearing in questions: 5.84%
 </pre>
 </div>
 </div>
@@ -13862,20 +13740,63 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>On average, a player will thus lose more than half the price of a ticket. 
-Let us see how much a regular player may lose in 10 years.</p>
+<p>The fraction of words in the answers appearing in the corresponding questions is close to 6%, which is not a lot. 
+Looking for the answer in the question can thus give a candidate only a limited boost (although it may be useful for winning close games).</p>
+<h3 id="How-often-are-questions-recycled?">How often are questions recycled?<a class="anchor-link" href="#How-often-are-questions-recycled?">&#182;</a></h3><p>Let us now estimate the fraction of words in each question which has been recycled. 
+We exclude words with 5 letters of less, as many of them are common words which contribute little to the actual meaning of the question.
+A sufficiently long word will be called recycled if it has already appeared in an earlier question.</p>
+<p>Let us first sort the <code>jeopardy</code> dataframe by air date:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># average gain * (two days a week) * (average number of days in a year)</span>
-<span class="c1"># * (number of years)</span>
-<span class="n">average_gain</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mf">365.2475</span> <span class="o">*</span> <span class="mi">10</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;Air Date&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We now compute the fraction of each question which has been recycled, and save it in the <code>Fraction of Question Recycled</code> column:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">vocabulary</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span> 
+<span class="n">fraction_recycled</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">question</span> <span class="ow">in</span> <span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Question&#39;</span><span class="p">]:</span>
+    <span class="n">words_question</span> <span class="o">=</span> <span class="n">question</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+    <span class="n">match_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">word_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words_question</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">word_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">vocabulary</span><span class="p">:</span>
+                <span class="n">match_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">vocabulary</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+    <span class="c1"># if there is no long enough word, return 0</span>
+    <span class="k">if</span> <span class="n">word_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">fraction_recycled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">fraction_recycled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">match_count</span> <span class="o">/</span> <span class="n">word_count</span><span class="p">)</span>
+        
+<span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Fraction of Question Recycled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fraction_recycled</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fraction of recycled questions: </span><span class="si">{:.2f}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Fraction of Question Recycled&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
 </pre></div>
 
     </div>
@@ -13888,13 +13809,60 @@ Let us see how much a regular player may lose in 10 years.</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[13]:</div>
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Fraction of recycled questions: 89.92%
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The fraction of recycled long words in questions is close to 90%. 
+It thus seems that studying previous questions can give a good idea of which questions may be asked.</p>
+<p>Let us plot the evolution of the fraction of recycled questions with years:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Air Year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Air Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
+<span class="n">jeopardy</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;Air Year&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()[</span><span class="s1">&#39;Fraction of Question Recycled&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Fraction of Question Recycled&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
 
 
 
 
-<div class="output_text output_subarea output_execute_result">
-<pre>-1659.2609529000001</pre>
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
 </div>
 
 </div>
@@ -13906,7 +13874,283 @@ Let us see how much a regular player may lose in 10 years.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>A player playing twice a week for 10 years will, on average, lose more than CAD 1650.</p>
+<p>The fraction of questions recycled has increased fast before 1990, before going above 90% in 2000 and staying nearly stable since then.</p>
+<h3 id="Most-used-words-in-high-value-questions">Most-used words in high-value questions<a class="anchor-link" href="#Most-used-words-in-high-value-questions">&#182;</a></h3><p>Let us now determine the most-used words, focusing on questions with high values. 
+Let us first plot a histogram of the question values to determine which of them may count as high-value:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">])</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span><span class="o">.</span><span class="n">hist</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(value ($))$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The peak of the distribution seems to be somewhere between \$300 and \\$1000. 
+Let us take \$800 as a threshold.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">nwords</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="mi">800</span>
+<span class="n">freq_words_questions</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">jeopardy</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">:</span>
+        <span class="n">words_question</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Question&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">words_question</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">word</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">freq_words_questions</span><span class="p">:</span>
+                    <span class="n">freq_words_questions</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">freq_words_questions</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="nb">sorted</span><span class="p">(</span><span class="n">freq_words_questions</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="o">-</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])[:</span><span class="n">nwords</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[18]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[(&#39;archive&#39;, 8328),
+ (&#39;target&#39;, 6969),
+ (&#39;_blank&#39;, 6937),
+ (&#39;country&#39;, 2535),
+ (&#39;called&#39;, 2503),
+ (&#39;american&#39;, 1542),
+ (&#39;president&#39;, 1376),
+ (&#39;became&#39;, 1371),
+ (&#39;french&#39;, 1368),
+ (&#39;before&#39;, 1232)]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The words “archive”, “target”, and “_blank” do not provide much information (and the first and third seem to mostly appear in media contents of questions, such as urls). 
+Discarding them, we find that the most used words in high-value questions are “country”, “called”, “american”, and “president”. 
+A candidate who wants to earn a lot of money at Jeopardy! should thus study the world geography and American history.</p>
+<h3 id="Most-frequenct-categories">Most frequenct categories<a class="anchor-link" href="#Most-frequenct-categories">&#182;</a></h3><p>To help a future candidate prepare for the game, it is useful to know which categories are most represented. 
+Let us first see which of them appear most in all questions:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">res</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Category&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Percentage of questions covered: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">res</span><span class="o">.</span><span class="n">sum</span><span class="p">())))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>BEFORE &amp; AFTER      547
+SCIENCE             519
+LITERATURE          496
+AMERICAN HISTORY    418
+POTPOURRI           401
+Name: Category, dtype: int64
+Percentage of questions covered: 1.10
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>These five categories taken together account for just over 1% of all questions asked. 
+To be succesful, a candidate should thus study a broad range of topics instead of focusing on a few questions.</p>
+<p>Let us now restrict ourselves to high-value questions, with a thresholf of 800USD:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">threshold</span> <span class="o">=</span> <span class="mi">800</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="p">[</span><span class="n">jeopardy</span><span class="p">[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">][</span><span class="s1">&#39;Category&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Percentage of questions covered: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">res</span><span class="o">.</span><span class="n">sum</span><span class="p">())))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>BEFORE &amp; AFTER             304
+LITERATURE                 201
+SCIENCE                    198
+OPERA                      150
+COLLEGES &amp; UNIVERSITIES    141
+Name: Category, dtype: int64
+Percentage of questions covered: 1.07
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The first three categories are the same as for all questions, with the ranks of “Literature” and “Science” exchanged. 
+The five most frequenct categories again cover only a small fraction of all questions.</p>
+<p>Finally, let us see which categories have the highest total values:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n_categories</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">jeopardy</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;Category&#39;</span><span class="p">)[</span><span class="s1">&#39;Value&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Highest value categories&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n_categories</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fraction of the total value covered: </span><span class="si">{:.2f}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">res</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n_categories</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">/</span><span class="n">res</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Highest value categories
+Category
+BEFORE &amp; AFTER    491900.0
+SCIENCE           361221.0
+LITERATURE        344900.0
+OPERA             254300.0
+WORD ORIGINS      251600.0
+Name: Value, dtype: float64
+Fraction of the total value covered: 1.06%
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The three categories with a highest value are the same as the most frequent ones. 
+We also find that they account for a small fraction of the total value only.</p>
+<h2 id="Conclusion">Conclusion<a class="anchor-link" href="#Conclusion">&#182;</a></h2><p>In this short project, we looked at some statistics of the Jeopardy! questions and answers. 
+We found that:</p>
+<ul>
+<li>On average, a bit less that 6% of the answer is already in the question. 
+Looking for the answer in the question can thus give a candidate a small advantage only. </li>
+<li>More than 90% of questions asked after the year 2000 had already been asked before. 
+A good strategy a future candidate can follow to be successful is thus to study previously-asked questions.</li>
+<li>The three categories which appear most frecuently are “Before &amp; after”, “Science”, and “Literature”. 
+However, they account for only just over 1% of all questions. 
+A future candidate should thus study a broader range of topics to be successful. </li>
+</ul>
 
 </div>
 </div>

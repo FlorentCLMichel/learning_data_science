@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>6_49_lottery_probabilities</title>
+<title>Handwritten_digits</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13077,22 +13077,9 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Winning-probabilities-at-the-6/49-lottery-game">Winning probabilities at the 6/49 lottery game<a class="anchor-link" href="#Winning-probabilities-at-the-6/49-lottery-game">&#182;</a></h1><p>Lotto 6/49, launched on June 12, 1982, was the first Canadian Lottery game to allow players to choose their own numbers. 
-Winning numbers are drawn every Wednesday and Saturday by the Interprovincial Lottery Corporation. 
-Each time, 6 numbers are drawn wthout replacement from a set of 49, plus a bonus number. 
-A player wins money if at least two of the first six are among the numbers they chose. 
-To win the hoghest amount, called the ‘jackpot prize’, a player must have the first six correct numbers.</p>
-<p>Although most people start playing the lottery for fun, it can also turn into an addiction or some players, with potentially disastrous consequences. 
-One important factor in the development of such addictions is the communication centred on the large amount of money the jackpot prize represents and on the change of life it can entail. 
-This focus on a technically possible but unlikely outcome can overshadow how small its probability is, or, more prosaically, that a player is unlikely to win anything at all.</p>
-<p>In this short project, I will estimate some winning likelihoods, in the hope that realizing their smallness may help prevent addiction. 
-I shall mostly use basic Python, in an effort to make the code as transparent as possible, and since the relatively small numbers involved do not require a lot of computing power. 
-I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the functions defined here on very large integers.</p>
-<h2 id="Basic-combinatorial-functions">Basic combinatorial functions<a class="anchor-link" href="#Basic-combinatorial-functions">&#182;</a></h2><p>Let us first define two functions:</p>
-<ul>
-<li><code>factorial</code>, taking a non-negative integer $n$ and returning $n!$, </li>
-<li><code>combination</code>, taking two non-negative integers $n$ and $k$ and returning ${n\choose k}$.</li>
-</ul>
+<h1 id="Handwritten-digits-reckognition">Handwritten digits reckognition<a class="anchor-link" href="#Handwritten-digits-reckognition">&#182;</a></h1><p>In this notebook, we train a few simple models to reckognize handwritten digits. We will use a rather small dataset, so our results may not apply to more standard machine-learning problems which generally involve large ones. We also use only simple models: k-nearest neighbours and dense neural networks. The experiments below should be seen as illustrations of what simple machine learning approaches can do on relatively small datasets.</p>
+<p>(For larger images, convolutional neural networks usually give better results.)</p>
+<h2 id="Load-and-pre-process-the-data">Load and pre-process the data<a class="anchor-link" href="#Load-and-pre-process-the-data">&#182;</a></h2><p>We will work with the <a href="https://archive.ics.uci.edu/ml/datasets/Optical+Recognition+of+Handwritten+Digits">UCI handwritten digits dataset</a>, consisting in 1797 images with 8 by 8 pixels each. These images are pictures of digits hand-written by 43 different people. We import it using scikit-learn:</p>
 
 </div>
 </div>
@@ -13102,25 +13089,8 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the factorial of n </span>
-<span class="sd">    n: non-negative integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">*=</span> <span class="n">i</span>
-    <span class="k">return</span> <span class="n">res</span>
-
-<span class="k">def</span> <span class="nf">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the number of combinations of k elements among n</span>
-<span class="sd">    n and k: non-negative integers </span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="n">n</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mi">0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="n">factorial</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_digits</span>
+<span class="n">handwritten_numbers</span> <span class="o">=</span> <span class="n">load_digits</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13131,8 +13101,7 @@ I recommend the use of a dedicated library, <em>e.g.</em> SciPy, if using the fu
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us also define the function <code>approximate_fraction_num</code> taking a float and returning a fraction close to it. 
-It takes an optional parameter <code>max_num</code>, equal to 10 by default, representing the maximum acceptable value for the numerator.</p>
+<p>Extract the images and labels:</p>
 
 </div>
 </div>
@@ -13142,49 +13111,8 @@ It takes an optional parameter <code>max_num</code>, equal to 10 by default, rep
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">gcd</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the greatest common divisor to a and b</span>
-<span class="sd">    a: positive integer</span>
-<span class="sd">    b: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">a_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="n">b_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">a_</span>
-    <span class="n">r_</span> <span class="o">=</span> <span class="n">a_</span> <span class="o">%</span> <span class="n">b_</span>
-    <span class="k">while</span><span class="p">(</span><span class="n">r_</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
-        <span class="n">a_</span> <span class="o">=</span> <span class="n">b_</span>
-        <span class="n">b_</span> <span class="o">=</span> <span class="n">r_</span>
-        <span class="n">r_</span> <span class="o">=</span> <span class="n">a_</span> <span class="o">%</span> <span class="n">b_</span>
-    <span class="k">return</span> <span class="n">b_</span>
-
-<span class="k">def</span> <span class="nf">approximate_fraction</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">max_den</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the numerator and denominator of a fraction approximating f, with </span>
-<span class="sd">    a maximum denominator max_den</span>
-<span class="sd">    f: float</span>
-<span class="sd">    max_den: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">if</span> <span class="n">f</span> <span class="o">==</span> <span class="mf">0.</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span> <span class="o">*</span> <span class="n">max_den</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_den</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span> 
-        <span class="n">num</span> <span class="o">+=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f</span><span class="p">))</span><span class="o">*</span><span class="mi">1</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">gcd</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">max_den</span><span class="p">)</span>
-    <span class="n">num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
-    <span class="n">den</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_den</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">den</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">approximate_fraction_num</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">max_num</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    returns the numerator and denominator of a fraction approximating f, with </span>
-<span class="sd">    a maximum numerator max_num</span>
-<span class="sd">    f: float</span>
-<span class="sd">    max_num: positive integer</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">frac_inv</span> <span class="o">=</span> <span class="n">approximate_fraction</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">f</span><span class="p">,</span> <span class="n">max_den</span> <span class="o">=</span> <span class="n">max_num</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">frac_inv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">frac_inv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">images</span> <span class="o">=</span> <span class="n">handwritten_numbers</span><span class="p">[</span><span class="s1">&#39;images&#39;</span><span class="p">]</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">handwritten_numbers</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span>
 </pre></div>
 
     </div>
@@ -13195,10 +13123,7 @@ It takes an optional parameter <code>max_num</code>, equal to 10 by default, rep
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Some-winning-probabilities">Some winning probabilities<a class="anchor-link" href="#Some-winning-probabilities">&#182;</a></h2><h3 id="Winning-the-jackpot-prize-in-one-try">Winning the jackpot prize in one try<a class="anchor-link" href="#Winning-the-jackpot-prize-in-one-try">&#182;</a></h3><p>Let $n$ be the number of elements in the set and $k$ be the number of elements drawn (in the case of the 6/49 game, they are respectively 49 and 6). 
-The probability $P_1(J)$ of winning the jackpot prize by playing once (<em>i.e.</em>, choosing a set of six numbers) is: 
-$$ P_1(J) = {n \choose k}^{-1} .$$
-Let us compute this number for $n = 49$ and $k = 6$:</p>
+<p>Let us plot a few images:</p>
 
 </div>
 </div>
@@ -13208,11 +13133,21 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
-<span class="n">P_1_J</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-<span class="n">frac</span> <span class="o">=</span> <span class="n">approximate_fraction_num</span><span class="p">(</span><span class="n">P_1_J</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Winning probability: </span><span class="si">{:.1e}</span><span class="s1">, i.e., </span><span class="si">{:.7f}</span><span class="s1">, or </span><span class="si">{}</span><span class="s1"> over </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">P_1_J</span><span class="p">,</span> <span class="n">P_1_J</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frac</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># import pyplot</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># indices of the images to plot</span>
+<span class="n">indices_to_plot</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">1700</span><span class="p">]]</span>
+
+<span class="c1"># create the figure</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices_to_plot</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices_to_plot</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">indices_to_plot</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">im</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+        <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">images</span><span class="p">[</span><span class="n">im</span><span class="p">])</span>
+
+<span class="c1"># show the figure        </span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13228,10 +13163,14 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
     <div class="prompt"></div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Winning probability: 7.2e-08, i.e., 0.0000072, or 1 over 13983816
-</pre>
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
 </div>
+
 </div>
 
 </div>
@@ -13241,9 +13180,7 @@ Let us compute this number for $n = 49$ and $k = 6$:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The probability of winning the jackpot prize is smaller than one over ten millions, which is rather small.</p>
-<h3 id="Would-I-have-won?">Would I have won?<a class="anchor-link" href="#Would-I-have-won?">&#182;</a></h3><p>To get more intuition about how small this number is, we want to write a function taking a six-numbers input and telling if, assuming this set was played many times, it would have won the jackpot prize at least once. 
-To this end, we first load the dataset <code>649.csv</code>, containing results from previous draws.</p>
+<p>Let us now normalize the images by subtracting the minimum value of all pixels and dividing by the maximum value, so that all values are between 0 and 1:</p>
 
 </div>
 </div>
@@ -13253,264 +13190,13 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;../Data/649.csv&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">images</span><span class="o">-</span><span class="n">images</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">-</span><span class="n">images</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+
+<span class="n">images</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>(3665, 11)
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PRODUCT</th>
-      <th>DRAW NUMBER</th>
-      <th>SEQUENCE NUMBER</th>
-      <th>DRAW DATE</th>
-      <th>NUMBER DRAWN 1</th>
-      <th>NUMBER DRAWN 2</th>
-      <th>NUMBER DRAWN 3</th>
-      <th>NUMBER DRAWN 4</th>
-      <th>NUMBER DRAWN 5</th>
-      <th>NUMBER DRAWN 6</th>
-      <th>BONUS NUMBER</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>649</td>
-      <td>1</td>
-      <td>0</td>
-      <td>6/12/1982</td>
-      <td>3</td>
-      <td>11</td>
-      <td>12</td>
-      <td>14</td>
-      <td>41</td>
-      <td>43</td>
-      <td>13</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>649</td>
-      <td>2</td>
-      <td>0</td>
-      <td>6/19/1982</td>
-      <td>8</td>
-      <td>33</td>
-      <td>36</td>
-      <td>37</td>
-      <td>39</td>
-      <td>41</td>
-      <td>9</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>649</td>
-      <td>3</td>
-      <td>0</td>
-      <td>6/26/1982</td>
-      <td>1</td>
-      <td>6</td>
-      <td>23</td>
-      <td>24</td>
-      <td>27</td>
-      <td>39</td>
-      <td>34</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>649</td>
-      <td>4</td>
-      <td>0</td>
-      <td>7/3/1982</td>
-      <td>3</td>
-      <td>9</td>
-      <td>10</td>
-      <td>13</td>
-      <td>20</td>
-      <td>43</td>
-      <td>34</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>649</td>
-      <td>5</td>
-      <td>0</td>
-      <td>7/10/1982</td>
-      <td>5</td>
-      <td>14</td>
-      <td>21</td>
-      <td>31</td>
-      <td>34</td>
-      <td>47</td>
-      <td>45</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PRODUCT</th>
-      <th>DRAW NUMBER</th>
-      <th>SEQUENCE NUMBER</th>
-      <th>DRAW DATE</th>
-      <th>NUMBER DRAWN 1</th>
-      <th>NUMBER DRAWN 2</th>
-      <th>NUMBER DRAWN 3</th>
-      <th>NUMBER DRAWN 4</th>
-      <th>NUMBER DRAWN 5</th>
-      <th>NUMBER DRAWN 6</th>
-      <th>BONUS NUMBER</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>3660</th>
-      <td>649</td>
-      <td>3587</td>
-      <td>0</td>
-      <td>6/6/2018</td>
-      <td>10</td>
-      <td>15</td>
-      <td>23</td>
-      <td>38</td>
-      <td>40</td>
-      <td>41</td>
-      <td>35</td>
-    </tr>
-    <tr>
-      <th>3661</th>
-      <td>649</td>
-      <td>3588</td>
-      <td>0</td>
-      <td>6/9/2018</td>
-      <td>19</td>
-      <td>25</td>
-      <td>31</td>
-      <td>36</td>
-      <td>46</td>
-      <td>47</td>
-      <td>26</td>
-    </tr>
-    <tr>
-      <th>3662</th>
-      <td>649</td>
-      <td>3589</td>
-      <td>0</td>
-      <td>6/13/2018</td>
-      <td>6</td>
-      <td>22</td>
-      <td>24</td>
-      <td>31</td>
-      <td>32</td>
-      <td>34</td>
-      <td>16</td>
-    </tr>
-    <tr>
-      <th>3663</th>
-      <td>649</td>
-      <td>3590</td>
-      <td>0</td>
-      <td>6/16/2018</td>
-      <td>2</td>
-      <td>15</td>
-      <td>21</td>
-      <td>31</td>
-      <td>38</td>
-      <td>49</td>
-      <td>8</td>
-    </tr>
-    <tr>
-      <th>3664</th>
-      <td>649</td>
-      <td>3591</td>
-      <td>0</td>
-      <td>6/20/2018</td>
-      <td>14</td>
-      <td>24</td>
-      <td>31</td>
-      <td>35</td>
-      <td>37</td>
-      <td>48</td>
-      <td>17</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
 </div>
 </div>
 
@@ -13518,9 +13204,7 @@ To this end, we first load the dataset <code>649.csv</code>, containing results 
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>This dataset contains results from all drawings that occurred before 21st June 2018. 
-Let us use it to build the list <code>drawings_6</code> of all drawings, excluding the bonus number. 
-We cast them as sets since the order is not important.</p>
+<p>Let us also print the first 100 labels:</p>
 
 </div>
 </div>
@@ -13530,11 +13214,30 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;drawing_6&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;NUMBER DRAWN &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">7</span><span class="p">)]]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-<span class="n">drawing_6</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;drawing_6&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">set</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">labels</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 9 5 5 6 5 0
+ 9 8 9 8 4 1 7 7 3 5 1 0 0 2 2 7 8 2 0 1 2 6 3 3 7 3 3 4 6 6 6 4 9 1 5 0 9
+ 5 2 8 2 0 0 1 7 6 3 2 1 7 4 6 3 1 3 9 1 7 6 8 4 3 1]
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -13542,7 +13245,10 @@ We cast them as sets since the order is not important.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>We now define the function <code>has_aready_won</code> taking a six-numbers list or set and returning <code>True</code> if it has been drawn at least once and <code>False</code> otherwise (technically, it returns whether it has been drawn before June 21st 2018; but this only make a difference for a small number of sets):</p>
+<p>The images do not seem to be in any particular order. 
+There is thus no need to shuffle them. 
+(In a real-world project, this assertion would need to be supported by stronger arguments, for instance a precise statistcal analysis of the distribution of labels, or the data should be shuffled anyway.)
+Finally, we split the data into a training set and a test set, the later containing approximately 20% of the data.</p>
 
 </div>
 </div>
@@ -13552,8 +13258,25 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">has_already_won</span><span class="p">(</span><span class="n">numbers</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span> <span class="ow">in</span> <span class="n">drawing_6</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">choice</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">array</span>
+
+<span class="c1"># fraction of images used for the test</span>
+<span class="n">fraction_test</span> <span class="o">=</span> <span class="mf">0.2</span>
+
+<span class="c1"># total number of images</span>
+<span class="n">n_images</span> <span class="o">=</span> <span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># indices of the test set</span>
+<span class="n">indices_test</span> <span class="o">=</span> <span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_images</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">fraction_test</span><span class="o">*</span><span class="n">n_images</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># test set</span>
+<span class="n">Xtest</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices_test</span><span class="p">])</span> 
+<span class="n">Ytest</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices_test</span><span class="p">])</span> 
+
+<span class="c1"># train set</span>
+<span class="n">Xtrain</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_images</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">indices_test</span><span class="p">])</span> 
+<span class="n">Ytrain</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_images</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">indices_test</span><span class="p">])</span> 
 </pre></div>
 
     </div>
@@ -13564,7 +13287,8 @@ We cast them as sets since the order is not important.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us test it on two examples: one which was drawn and one which was not.</p>
+<h2 id="K-nearest-neighbours">K-nearest neighbours<a class="anchor-link" href="#K-nearest-neighbours">&#182;</a></h2><p>The first algorithm we use is the k-nearest neighbours, using the <code>KNeighborsClassifier</code> class from scikit-learn. 
+We first define a function to train such a model:</p>
 
 </div>
 </div>
@@ -13574,30 +13298,29 @@ We cast them as sets since the order is not important.</p>
 <div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">has_already_won</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">41</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">has_already_won</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">41</span><span class="p">]))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># import the KNeighborsClassifier class</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">KNeighborsClassifier</span>
+
+<span class="k">def</span> <span class="nf">train_knn</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Train a k-nearest neighbours model and return it. </span>
+<span class="sd">    </span>
+<span class="sd">    Arguments:</span>
+<span class="sd">        k (int): number of neighbours</span>
+<span class="sd">        X (array): train data</span>
+<span class="sd">        Y (array): train labels</span>
+<span class="sd">        kwargs: keywords arguments for the KNeighborsClassifer instance</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># flatten each image</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">X</span><span class="p">])</span>
+    
+    <span class="n">model</span> <span class="o">=</span> <span class="n">KNeighborsClassifier</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>True
-False
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -13605,7 +13328,7 @@ False
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us now do a small experiment: we select a large number (say, 10000) of (not necessarily different) sets of six numbers at random, and count how much of them have been drawn at least once:</p>
+<p>We then define a function to test the model:</p>
 
 </div>
 </div>
@@ -13615,71 +13338,31 @@ False
 <div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">choice</span><span class="p">,</span> <span class="n">seed</span>
-
-<span class="n">n_sets</span> <span class="o">=</span> <span class="mi">10000</span>
-
-<span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix the seed to get the same result each time the code is run</span>
-<span class="n">n_has_won</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sets</span><span class="p">):</span> 
-    <span class="n">test_set</span> <span class="o">=</span> <span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">has_already_won</span><span class="p">(</span><span class="n">test_set</span><span class="p">):</span> 
-        <span class="n">n_has_won</span> <span class="o">+=</span> <span class="mi">1</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Among the </span><span class="si">{}</span><span class="s1"> sets, </span><span class="si">{}</span><span class="s1"> have been drawn at least once&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_has_won</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_knn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Test a k-nearest neighbours model and return its accuracy.</span>
+<span class="sd">    </span>
+<span class="sd">    Arguments:</span>
+<span class="sd">        model (KNeighborsClassifer): the model</span>
+<span class="sd">        X (array): test data</span>
+<span class="sd">        Y (array): test labels</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># flatten each image</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">X</span><span class="p">])</span>
+    
+    <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Among the 10000 sets, 2 have been drawn at least once
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Only 2 sets among the 1000 have been drawn at least once. 
-The probability for a given set to be drawn one specific day is thus quite small!</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Winning-the-jackpot-price-with-several-tickets">Winning the jackpot price with several tickets<a class="anchor-link" href="#Winning-the-jackpot-price-with-several-tickets">&#182;</a></h3><p>Assuming we play $l$ different valid tickets, where $l$ is a positive integer, the probability $P_l(J)$ to win the jackpot prize is:
-$$P_l(J) = l \times P_1(J).$$
-From the above results, having a probability of just 1 in 10 of winning would require playing more than one million sets of numbers. 
-At the time of writing (21 April 2020), the cost of playing six numbers is CAD3. 
-Having a probability to win the jackpot prize of more than one half requires buying more than 5,000,000 of them, for a total cost of CAD15,000,000. 
-Since the jackpot prize is only CAD6,000,000 at the moment, this would incur a large loss of money even if winning.</p>
-<h3 id="Having-a-few-matching-numbers">Having a few matching numbers<a class="anchor-link" href="#Having-a-few-matching-numbers">&#182;</a></h3><p>We now focus on smaller prizes. 
-The function <code>proba_prize</code> below takes 4 inputs:</p>
-<ul>
-<li>n (positive integer): the number of elements in the set, </li>
-<li>k (positive integer): the number of elements to be chosen by the player, </li>
-<li>l (positive integer): the number of elements that need to match for a given prize, excluding the bonus number, </li>
-<li>b (boolean): whether the bonus number needs to match</li>
-</ul>
-<p>It returns the probability of winning the price when playing once. 
-All inputs defaut to the jackpot prize setup.</p>
+<p>Finally, we define a function performing n-fold cross-validation:</p>
 
 </div>
 </div>
@@ -13689,20 +13372,55 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">proba_prize</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">49</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="n">proba_l_numbers</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="c1"># compute the probability that at least l numbers match</span>
-    <span class="k">for</span> <span class="n">l_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-        <span class="c1"># probability that exactly l_ elements match</span>
-        <span class="c1"># for each choice of l_ elements among the k, the number of draws where </span>
-        <span class="c1"># they match while the k-l_ others don&#39;t match is equal to the number of</span>
-        <span class="c1"># ways of choosing k-l_ elements among n-k</span>
-        <span class="n">proba_l_numbers</span> <span class="o">+=</span> <span class="n">combination</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">l_</span><span class="p">)</span> <span class="o">*</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">,</span><span class="n">k</span><span class="o">-</span><span class="n">l_</span><span class="p">)</span> <span class="o">/</span> <span class="n">combination</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">b</span><span class="p">:</span>
-        <span class="c1"># if the bonus number needs to match</span>
-        <span class="k">return</span> <span class="n">proba_l_numbers</span> <span class="o">/</span> <span class="n">n</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">proba_l_numbers</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">shuffle</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">ceil</span><span class="p">,</span> <span class="n">concatenate</span>
+
+<span class="k">def</span> <span class="nf">crossVal</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">train_function</span><span class="p">,</span> <span class="n">test_function</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Perform an n-fold cross-validation and return the mean accuracy.</span>
+<span class="sd">    </span>
+<span class="sd">    Arguments: </span>
+<span class="sd">        n (int)</span>
+<span class="sd">        train_function (function): must take as arguments the parameter(s), </span>
+<span class="sd">            train data, and train labels</span>
+<span class="sd">        test_function (function): must take as arguments the model, test data, </span>
+<span class="sd">            and test labels, and return the accuracy</span>
+<span class="sd">        params (iterable): parameters for the model</span>
+<span class="sd">        X (array): train data</span>
+<span class="sd">        Y (array): train labels</span>
+<span class="sd">        kwargs: keyword arguments for the model</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># number of elements per subset</span>
+    <span class="n">n_els</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span><span class="o">/</span><span class="n">n</span><span class="p">))</span>
+    
+    <span class="c1"># divide the data into n (approximately) equal subsets</span>
+    <span class="n">indices_shuffled</span> <span class="o">=</span> <span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)))</span>
+    <span class="n">shuffle</span><span class="p">(</span><span class="n">indices_shuffled</span><span class="p">)</span>
+    <span class="n">X_divided</span> <span class="o">=</span> <span class="p">[</span><span class="n">X</span><span class="p">[</span><span class="n">indices_shuffled</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">n_els</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">n_els</span><span class="p">]]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">X_divided</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">indices_shuffled</span><span class="p">[(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">n_els</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="n">Y_divided</span> <span class="o">=</span> <span class="p">[</span><span class="n">Y</span><span class="p">[</span><span class="n">indices_shuffled</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">n_els</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">n_els</span><span class="p">]]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">Y_divided</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">indices_shuffled</span><span class="p">[(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">n_els</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+    
+    <span class="c1"># compute the accuracy for each fold</span>
+    
+    <span class="n">accuracy</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        
+        <span class="c1"># build the train and test data</span>
+        <span class="n">X_train</span> <span class="o">=</span> <span class="n">concatenate</span><span class="p">([</span><span class="n">X_divided</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">i</span><span class="p">])</span>
+        <span class="n">Y_train</span> <span class="o">=</span> <span class="n">concatenate</span><span class="p">([</span><span class="n">Y_divided</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">i</span><span class="p">])</span>
+        <span class="n">X_test</span> <span class="o">=</span> <span class="n">X_divided</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">Y_test</span> <span class="o">=</span> <span class="n">Y_divided</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        
+        <span class="c1"># train a model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">train_function</span><span class="p">(</span><span class="o">*</span><span class="n">params</span><span class="p">,</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+        <span class="c1"># compute its accuracy</span>
+        <span class="n">accuracy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_function</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">Y_test</span><span class="p">))</span>
+        
+    <span class="c1"># return the mean value of the accuracy</span>
+    <span class="k">return</span> <span class="n">array</span><span class="p">(</span><span class="n">accuracy</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13713,7 +13431,7 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us apply this function to $l \in \lbrace 2, 3, 4, 5, 6 \rbrace$:</p>
+<p>Let us plot the average accuracy for several values of $k$ for $n=4$:</p>
 
 </div>
 </div>
@@ -13723,13 +13441,15 @@ All inputs defaut to the jackpot prize setup.</p>
 <div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
-    <span class="n">proba</span> <span class="o">=</span> <span class="n">proba_prize</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">)</span>
-    <span class="n">frac</span> <span class="o">=</span> <span class="n">approximate_fraction_num</span><span class="p">(</span><span class="n">proba</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of having at least </span><span class="si">{}</span><span class="s1"> matching numbers: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">proba</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of having at least </span><span class="si">{}</span><span class="s1"> matching numbers: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately </span><span class="si">{}</span><span class="s1"> in </span><span class="si">{}</span><span class="s1">, or one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">proba</span><span class="p">,</span> <span class="n">frac</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frac</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">list_k</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">21</span><span class="p">)</span>
+
+<span class="n">acc</span> <span class="o">=</span> <span class="p">[</span><span class="n">crossVal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">train_knn</span><span class="p">,</span> <span class="n">test_knn</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,),</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">list_k</span><span class="p">]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">list_k</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$k$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;CV accuracy&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13745,14 +13465,14 @@ All inputs defaut to the jackpot prize setup.</p>
     <div class="prompt"></div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Probability of having at least 2 matching numbers: 1.51e-01, i.e., approximately 5 in 33, or one in 6
-Probability of having at least 3 matching numbers: 1.86e-02, i.e., approximately 10 in 537, or one in 53
-Probability of having at least 4 matching numbers: 9.87e-04, i.e., approximately one in 1013
-Probability of having at least 5 matching numbers: 1.85e-05, i.e., approximately 5 in 269958, or one in 53991
-Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately one in 13983816
-</pre>
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
 </div>
+
 </div>
 
 </div>
@@ -13762,7 +13482,8 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Let us also compute the probability of winning the second prize, i.e., having 5 matching numbers plus the bonus number:</p>
+<p>It seems that models with a relatively small value of $k$ give the best results. 
+let us train and test a model with $k=3$:</p>
 
 </div>
 </div>
@@ -13772,8 +13493,9 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">proba</span> <span class="o">=</span> <span class="n">proba_prize</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Probability of winning the second prize: </span><span class="si">{:.2e}</span><span class="s1">, i.e., approximately one in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">proba</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">proba</span><span class="p">)))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">k</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">train_knn</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)</span>
+<span class="n">test_knn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtest</span><span class="p">,</span> <span class="n">Ytest</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13786,13 +13508,15 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 
 <div class="output_area">
 
-    <div class="prompt"></div>
+    <div class="prompt output_prompt">Out[11]:</div>
 
 
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Probability of winning the second prize: 3.78e-07, i.e., approximately one in 2645586
-</pre>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.9888579387186629</pre>
 </div>
+
 </div>
 
 </div>
@@ -13802,10 +13526,10 @@ Probability of having at least 6 matching numbers: 7.15e-08, i.e., approximately
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>All these probabilities are rather small. 
-Even the probability of having just two matching numbers, which, under the current rules (as of 12/02/2020) is the lowest possible prize and gives only a free ticket, is just one in six.</p>
-<h2 id="Average-win-(or-loss)">Average win (or loss)<a class="anchor-link" href="#Average-win-(or-loss)">&#182;</a></h2><p>Finally, let us compute the average gain for each play, using data from <a href="https://lotto.bclc.com/lotto-649-and-extra/prizes-and-odds.html">the bclc website</a> (valid on 21 April 2020). 
-We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number of players, the average number of players winning the prize is $N P$. The average gain for each player is thue $(P p) / (N P) = p / N$.</p>
+<p>This model has an accuracy close to 99%.</p>
+<h2 id="Perceptron-with-one-single-hidden-layer">Perceptron with one single hidden layer<a class="anchor-link" href="#Perceptron-with-one-single-hidden-layer">&#182;</a></h2><p>Let us now use a very simple neural network, with only one hidden layer. 
+We use the <code>MLPClassifier</code> class from scikit-learn. 
+We first define a function to train the model:</p>
 
 </div>
 </div>
@@ -13815,25 +13539,208 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 <div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">49</span>
-<span class="n">k</span> <span class="o">=</span> <span class="mi">6</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># import the MLPClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.neural_network</span> <span class="kn">import</span> <span class="n">MLPClassifier</span>
 
-<span class="c1"># cost of playing in CAD</span>
-<span class="n">cost_line</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils._testing</span> <span class="kn">import</span> <span class="n">ignore_warnings</span>
+<span class="kn">from</span> <span class="nn">sklearn.exceptions</span> <span class="kn">import</span> <span class="n">ConvergenceWarning</span>
 
-<span class="c1"># prize amount in CAD</span>
-<span class="n">prop_in_play</span> <span class="o">=</span> <span class="mf">0.47</span> <span class="c1"># proportion of sales put in play</span>
+<span class="c1"># decorator to suppress a convergence warning (this warning should be dealt </span>
+<span class="c1"># with properly in real-world applications)</span>
+<span class="nd">@ignore_warnings</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">ConvergenceWarning</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">train_P</span><span class="p">(</span><span class="n">ks</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Train a perceptron and return it. </span>
+<span class="sd">    </span>
+<span class="sd">    Arguments:</span>
+<span class="sd">        ks (list): number of neurons for each layer</span>
+<span class="sd">        X (array): train data</span>
+<span class="sd">        Y (array): train labels</span>
+<span class="sd">        kwargs: keywords arguments for the MLPClassifier instance</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+    <span class="c1"># flatten each image</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">X</span><span class="p">])</span>
+    
+    <span class="n">model</span> <span class="o">=</span> <span class="n">MLPClassifier</span><span class="p">(</span><span class="n">hidden_layer_sizes</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
 
-<span class="c1"># estimate for the number of players</span>
-<span class="c1"># The result actually does no depend on this number as, in each term in the </span>
-<span class="c1"># sum, it appears both on the numerator and denominator. However, we keep </span>
-<span class="c1"># it for clarity. </span>
-<span class="n">number_players</span> <span class="o">=</span> <span class="mi">3000000</span> 
-<span class="n">pools_fund</span> <span class="o">=</span> <span class="n">number_players</span> <span class="o">*</span> <span class="n">cost_line</span> <span class="o">*</span> <span class="n">prop_in_play</span>
-<span class="n">prize_amount</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.795</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.06</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.05</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">0.095</span><span class="o">*</span><span class="n">pools_fund</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">]</span>
+    </div>
+</div>
+</div>
 
-<span class="n">average_gain</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">prize_amount</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">number_players</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">prize_amount</span><span class="p">))])</span> <span class="o">-</span> <span class="n">cost_line</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Average gain: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">average_gain</span><span class="p">))</span>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let us use cross-validation woth $n=4$ to select the optimal number of neurons:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">list_k</span> <span class="o">=</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">]</span>
+
+<span class="n">acc</span> <span class="o">=</span> <span class="p">[</span><span class="n">crossVal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">train_P</span><span class="p">,</span> <span class="n">test_knn</span><span class="p">,</span> <span class="p">(</span><span class="n">k</span><span class="p">,),</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">list_k</span><span class="p">]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">list_k</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$k$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;CV accuracy&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It seems that the best-performing model is the one with 128 neurons. 
+Let us see how it performs:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">train_P</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)</span>
+<span class="n">test_knn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtest</span><span class="p">,</span> <span class="n">Ytest</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0.7353760445682451</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This model has a testa ccuracy close to 98%.</p>
+<p>Let us plot the train and test accuracies of each model to see which of them overfits or underfits:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_acc</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">test_acc</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">list_k</span><span class="p">:</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">train_P</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)</span>
+    <span class="n">train_acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_knn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">))</span>
+    <span class="n">test_acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_knn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtest</span><span class="p">,</span> <span class="n">Ytest</span><span class="p">))</span>
+    
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">list_k</span><span class="p">,</span> <span class="n">train_acc</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;train accuracy&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">list_k</span><span class="p">,</span> <span class="n">test_acc</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;test accuracy&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$k$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>All the models seem to overfit.</p>
+<h2 id="Perceptron-with-multiple-hidden-layers">Perceptron with multiple hidden layers<a class="anchor-link" href="#Perceptron-with-multiple-hidden-layers">&#182;</a></h2><p>Let us now add a second hiden layer to our models.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">list_ks</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">),</span> <span class="p">(</span><span class="mi">64</span><span class="p">,</span><span class="mi">64</span><span class="p">)]</span>
+
+<span class="k">for</span> <span class="n">ks</span> <span class="ow">in</span> <span class="n">list_ks</span><span class="p">:</span> 
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Shape: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, CV accuracy: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">crossVal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">train_P</span><span class="p">,</span> <span class="n">test_knn</span><span class="p">,</span> <span class="p">(</span><span class="n">ks</span><span class="p">,),</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)))</span>
 </pre></div>
 
     </div>
@@ -13850,7 +13757,17 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Average gain: -1.59
+<pre>Shape: (2, 2), CV accuracy: 0.9797910830999067
+Shape: (3, 3), CV accuracy: 0.9777310924369748
+Shape: (2, 4), CV accuracy: 0.974953314659197
+Shape: (4, 2), CV accuracy: 0.9756302521008404
+Shape: (4, 4), CV accuracy: 0.9763538748832866
+Shape: (8, 8), CV accuracy: 0.9721638655462185
+Shape: (4, 12), CV accuracy: 0.9693860877684407
+Shape: (12, 4), CV accuracy: 0.979125816993464
+Shape: (16, 16), CV accuracy: 0.9791549953314659
+Shape: (32, 32), CV accuracy: 0.9770308123249299
+Shape: (64, 64), CV accuracy: 0.9763305322128851
 </pre>
 </div>
 </div>
@@ -13862,20 +13779,20 @@ We use that, if $P$ is the probability of winning a prize $p$ and $N$ the number
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>On average, a player will thus lose more than half the price of a ticket. 
-Let us see how much a regular player may lose in 10 years.</p>
+<p>The best model seems to be the one with 2 neurons in the first hidden layer and 4 in the second one. 
+(However, the performances of these models are very close. A more precise statistical analysys would be required to ascertain which is better.)
+Let us test it:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># average gain * (two days a week) * (average number of days in a year)</span>
-<span class="c1"># * (number of years)</span>
-<span class="n">average_gain</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mf">365.2475</span> <span class="o">*</span> <span class="mi">10</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">train_P</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)</span>
+<span class="n">test_knn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtest</span><span class="p">,</span> <span class="n">Ytest</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13888,13 +13805,13 @@ Let us see how much a regular player may lose in 10 years.</p>
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[13]:</div>
+    <div class="prompt output_prompt">Out[17]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>-1659.2609529000001</pre>
+<pre>0.9860724233983287</pre>
 </div>
 
 </div>
@@ -13906,10 +13823,119 @@ Let us see how much a regular player may lose in 10 years.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>A player playing twice a week for 10 years will, on average, lose more than CAD 1650.</p>
+<p>The accuracy is close to 98%.</p>
+<p>Finally, let us try with 3 layers:</p>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">list_ks</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)]</span>
+
+<span class="k">for</span> <span class="n">ks</span> <span class="ow">in</span> <span class="n">list_ks</span><span class="p">:</span> 
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Shape: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, CV accuracy: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">crossVal</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">train_P</span><span class="p">,</span> <span class="n">test_knn</span><span class="p">,</span> <span class="p">(</span><span class="n">ks</span><span class="p">,),</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Shape: (2, 2, 2), CV accuracy: 0.9770366479925303
+Shape: (2, 2, 4), CV accuracy: 0.9791141456582634
+Shape: (2, 4, 2), CV accuracy: 0.9756244164332399
+Shape: (2, 4, 4), CV accuracy: 0.97078081232493
+Shape: (2, 4, 8), CV accuracy: 0.9714285714285715
+Shape: (8, 4, 2), CV accuracy: 0.9770308123249299
+Shape: (4, 4, 2), CV accuracy: 0.97078081232493
+Shape: (4, 2, 2), CV accuracy: 0.9721405228758171
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The models with shape (2,2,4) and (8,4,2) seem to have the best performance, although the differences are again too small to be statistically significant. 
+Let us test them:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">train_P</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_knn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtest</span><span class="p">,</span> <span class="n">Ytest</span><span class="p">))</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">train_P</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">Xtrain</span><span class="p">,</span> <span class="n">Ytrain</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">test_knn</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">Xtest</span><span class="p">,</span> <span class="n">Ytest</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0.9832869080779945
+0.9777158774373259
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>They both have an accuracy close to 98%.</p>
+<p>In summary, it seems that simple perceptron models have a slightly lower accuracy than k-nearest neighbours for this problem.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
     </div>
   </div>
